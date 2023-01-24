@@ -15,12 +15,26 @@ Including another URLconf
 """
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
+from chat.views import *
 from chat_proj import settings
+from rest_framework import routers
+
+user_router = routers.SimpleRouter()
+user_router.register(r'user', UserViewSet)
+
+author_router = routers.SimpleRouter()
+author_router.register(r'author', AuthorViewSet)
+
+chat_router = routers.SimpleRouter()
+chat_router.register(r'chat', ChatRoomViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/v1/', include(user_router.urls)),
+    path('api/v1/', include(author_router.urls)),
+    path('api/v1/', include(chat_router.urls)),
 ]
 
 if settings.DEBUG:

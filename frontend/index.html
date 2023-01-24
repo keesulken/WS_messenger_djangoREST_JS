@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Page Title</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
+    <script src='main.js'></script>
+</head>
+<body>
+    <div class="root">
+    </div>
+    <script>
+        let data;
+        let root = document.querySelector('.root');
+        let url = 'http://127.0.0.1:8000/api/v1/userlist/'
+        fetch(url)
+        .then(res => res.json())
+        .then(result => data = result)
+        console.log(data)
+    </script>
+</body>
+</html>
