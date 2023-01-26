@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <h2> Войти в систему </h2>
+    <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Продолжить">
+    </form>
+    <script>
+        let author = document.querySelector('input[name=author]');
+        let label = document.querySelector('label[for=id_author]');
+        author.value = 1;
+        [author, label].map(item => item.style.display = 'none');
+    </script>
+</body>
+</html>

@@ -9,5 +9,4 @@ fetch(url)
         newElem.innerHTML = '<p>'+ result[i] + '</p>'
         document.body.insertBefore(newElem, root);
     }
-})
-
+});

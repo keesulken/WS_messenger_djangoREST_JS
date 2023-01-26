@@ -16,6 +16,7 @@ Including another URLconf
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import TemplateView
 
 from chat.views import *
 from chat_proj import settings
@@ -32,9 +33,14 @@ chat_router.register(r'chat', ChatRoomViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('auth/', include('rest_framework.urls')),
+    path('api/v1/profile/', ProfileAPIView.as_view()),
+    path('account/profile/', TemplateView.as_view(template_name='profile.html')),
     path('api/v1/', include(user_router.urls)),
     path('api/v1/', include(author_router.urls)),
     path('api/v1/', include(chat_router.urls)),
+    path('api/v1/chatroom/<int:pk>', ChatDetail.as_view()),
+    path('register/', RegisterView.as_view(template_name='signup.html')),
 ]
 
 if settings.DEBUG:

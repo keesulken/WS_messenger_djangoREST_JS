@@ -1,11 +1,8 @@
-const http = require('http');
-
-
-const html = `<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset='utf-8'>
-    <title>Page Title</title>
+    <title>Register</title>
 </head>
 <body>
     <div class="root">
@@ -30,8 +27,8 @@ const html = `<!DOCTYPE html>
                 errorBlock.innerHTML = 'username should contatin at least 4 chars';
             } else if (username.toLowerCase() === username.toUpperCase()) {
                 errorBlock.innerHTML = 'username should contain at least one letter';
-            } else if (password1.length < 8) {
-                errorBlock.innerHTML = 'password should consist of at least 8 chars';
+            } else if (password1.length < 4) {
+                errorBlock.innerHTML = 'password should consist of at least 4 chars';
             } else if (password1 != password2) {
                 errorBlock.innerHTML = 'passwords dont match';
             } else {
@@ -59,32 +56,4 @@ const html = `<!DOCTYPE html>
         };
     </script>
 </body>
-</html>`
-let css;
-let js;
-
-
-http.createServer((req, res) => {
-    switch (req.url) {
-        case '/':
-            res.writeHead(200, { 'Content-Type': 'text/html' })
-            res.end(html);
-            break;
-
-        case '/app.css':
-            res.writeHead(200, { 'Content-Type': 'text/css' })
-            res.end(css);
-            break;
-
-        case '/app.js':
-            res.writeHead(200, { 'Content-Type': 'text/javascript' })
-            res.end(js);
-            break;
-
-        default:
-            res.writeHead(404, { 'Content-Type': 'text/plain' })
-            res.end('404 not found');
-            break;
-    }
-}).listen(3000, () => console.log('running'));
-
+</html>

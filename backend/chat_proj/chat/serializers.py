@@ -15,32 +15,25 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = Author
         fields = ('user',
                   'username',
-                  'picture',)
-
-    def create(self, validated_data):
-        return Author.objects.create(**validated_data)
+                  'picture',
+                  'chatroom_set',)
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatRoom
         fields = ('name',
-                  'admin_id',
+                  'admin',
                   'description',
                   'last_activity',
                   'user_list',)
-
-    def create(self, validated_data):
-        return ChatRoom.objects.create(**validated_data)
 
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ('author_id',
-                  'chat_id',
+        fields = ('author',
+                  'chat',
                   'content',
+                  'added',
                   'pinned',)
-
-    def create(self, validated_data):
-        return Message.objects.create(**validated_data)

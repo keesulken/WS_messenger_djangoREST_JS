@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset='utf-8'>
+    <title>Login page</title>
+</head>
+<body>
+    <h4 class="error-str"></h4>
+    <form class="main-form">
+        <p><input name="username" type="text"></p>
+        <p><input name="password" type="text"></p>
+        <p><input type="submit" value="submit">
+        <input type="reset" value="reset"></p>
+    </form>
+    <h3 class="success-str"></h3>
+    <script>
+        function submitForm(event){
+            event.preventDefault();
+            let username = event.target.elements['username'].value;
+            let password = event.target.elements['password'].value;
+            let error = document.querySelector('.error-str');
+            let success = document.querySelector('.success-str');
+            let url = 'http://127.0.0.1:8000/auth/login/';
+            let user = {
+                username: username,
+                password: password,
+            }
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json;charset=utf-8',
+                },
+                body: JSON.stringify(user),
+            }).then(res => res.json())
+            .then(result => console.log(result))
+        }
+    </script>
+</body>
+</html>

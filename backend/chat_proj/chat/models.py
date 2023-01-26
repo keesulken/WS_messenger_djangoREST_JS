@@ -6,10 +6,16 @@ class Author(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     username = models.CharField(max_length=64)
     picture = models.ImageField(upload_to='profile_pics/', blank=True)
-    chat_list = models.ManyToManyField('ChatRoom', through='UserChat')
 
     def __str__(self):
         return f'Author {self.username}'
+
+    @property
+    def get_picture_url(self):
+        if self.picture and hasattr(self.picture, 'url'):
+            return self.picture.url
+        else:
+            return 'media/profile_pics/default.png'
 
 
 class ChatRoom(models.Model):
@@ -17,6 +23,7 @@ class ChatRoom(models.Model):
     admin = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     user_list = models.ManyToManyField(Author, through='UserChat')
     description = models.CharField(max_length=255, blank=True)
+    private = models.BooleanField(default=False)
     last_activity = models.DateTimeField(auto_now=True)
 
     def __str__(self):
