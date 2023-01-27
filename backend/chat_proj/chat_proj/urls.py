@@ -35,7 +35,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('rest_framework.urls')),
     path('api/v1/profile/', ProfileAPIView.as_view()),
-    path('account/profile/', TemplateView.as_view(template_name='profile.html')),
+    path('account/profile/', TemplateView.as_view(template_name='prof.html')),
     path('api/v1/', include(user_router.urls)),
     path('api/v1/', include(author_router.urls)),
     path('api/v1/', include(chat_router.urls)),
