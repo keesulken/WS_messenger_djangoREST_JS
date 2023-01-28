@@ -35,7 +35,6 @@ class Message(models.Model):
     chat = models.ForeignKey(ChatRoom, on_delete=models.CASCADE)
     content = models.TextField()
     added = models.DateTimeField(auto_now_add=True)
-    pinned = models.ImageField(upload_to='pinned_pics/', blank=True)
 
     def __str__(self):
         return f'Msg {self.content[:20]}'

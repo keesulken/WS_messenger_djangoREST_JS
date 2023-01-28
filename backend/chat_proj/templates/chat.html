@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>chat</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+        <style>
+        body {
+            display: flex;
+            flex-flow: row nowrap;
+        }
+
+        img {
+            height: 30px;
+            width: 30px;
+        }
+
+        .members div {
+            display: flex;
+            flex-flow: row nowrap;
+        }
+        </style>
+    </head>
+    <body>
+        <div class="members">
+        </div>
+        <div class="main-field">
+        </div>
+        <div class="chat-info">
+            <h2 class="chat-name">chat name</h2>
+            <h3 class="chat-desc">chat description</h3>
+            <h4 class="chat-admin">admin: admin</h4>
+        </div>
+        <script>
+            const chatName = document.querySelector('.chat-name');
+            const chatDesc = document.querySelector('.chat-desc');
+            const chatAdmin = document.querySelector('.chat-admin');
+            const members = document.querySelector('.members');
+            const field = document.querySelector('.main-field');
+            const url = window.location.href;
+            const path = 'account/chat/';
+            const index = url.slice((url.lastIndexOf(path))+path.length);
+            const chatURL = `http://127.0.0.1:8000/api/v1/chatroom/${index}`;
+            fetch(chatURL).then(res => res.json()).then(result => {
+                chatName.innerHTML = result.chat.name;
+                chatDesc.innerHTML = result.chat.description;
+                chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
+                for (let user of result.users) {
+                    let newElem = document.createElement('div');
+                    newElem.id = 'user' + user.id;
+                    let username = `<p id="username${user.id}">${user.username}</p>`;
+                    let picture;
+                    if (user.picture) {
+                        picture = `<p><img src="${user.picture}" alt=${user.username}></p>`;
+                    } else {
+                        let url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
+                        picture = `<p><img src="${url}" alt=${user.username}></p>`;
+                    };
+                    newElem.innerHTML = picture + username;
+                    members.insertAdjacentElement('beforeend', newElem);
+                };
+                for (let msg of result.messages) {
+                    let newElem = document.createElement('div');
+                    newElem.id = 'msg' + msg.id;
+                    let content = `<p>${msg.content}</p>`;
+                    let added = `<p>${msg.added}</p>`;
+                    let authorName = document.getElementById(`username${msg.author}`);
+                    if (authorName){
+                        authorName = `<p>${authorName.textContent}</p>`;
+                    } else {
+                        authorName = '<p>Ex-member</p>';
+                    };
+                    newElem.innerHTML = authorName + content + added;
+                    field.insertAdjacentElement('beforeend', newElem)
+                }
+            }).catch(error => console.log(error.message));
+        </script>
+    </body>
+</html>

@@ -10,7 +10,7 @@ class UserSerializer(serializers.ModelSerializer):
                   'author',)
 
 
-class AuthorSerializer(serializers.ModelSerializer):
+class SingleAuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Author
         fields = ('id',
@@ -18,6 +18,22 @@ class AuthorSerializer(serializers.ModelSerializer):
                   'username',
                   'picture',
                   'chatroom_set',)
+
+
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Author
+        fields = ('id',
+                  'username',
+                  'picture',)
+
+
+class SingleChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChatRoom
+        fields = ('id',
+                  'name',
+                  'description',)
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
@@ -36,7 +52,5 @@ class MessageSerializer(serializers.ModelSerializer):
         model = Message
         fields = ('id',
                   'author',
-                  'chat',
                   'content',
-                  'added',
-                  'pinned',)
+                  'added',)

@@ -16,6 +16,12 @@
         <script type="module">
             const chatEl = document.getElementById('chat');
             const ws = new WebSocket('ws://127.0.0.1:5000');
+            ws.onopen = () => {
+                ws.send(JSON.stringify({initial:{
+                    user: 'vovan',
+                    id: '5',
+                }}))
+            }
             ws.onmessage = (message) => {
                 const messages = JSON.parse(message.data);
                 messages.forEach((val) => {

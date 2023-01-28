@@ -36,10 +36,12 @@ urlpatterns = [
     path('auth/', include('rest_framework.urls')),
     path('api/v1/profile/', ProfileAPIView.as_view()),
     path('account/profile/', TemplateView.as_view(template_name='prof.html')),
+    path('account/chat/<int:pk>', TemplateView.as_view(template_name='chat.html')),
+    path('account/ws/1', TemplateView.as_view(template_name='ws.html')),
     path('api/v1/', include(user_router.urls)),
     path('api/v1/', include(author_router.urls)),
     path('api/v1/', include(chat_router.urls)),
-    path('api/v1/chatroom/<int:pk>', ChatDetail.as_view()),
+    path('api/v1/chatroom/<int:pk>', ChatDetailAPIView.as_view()),
     path('register/', RegisterView.as_view(template_name='signup.html')),
 ]
 
