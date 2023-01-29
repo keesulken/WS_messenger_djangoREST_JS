@@ -11,6 +11,13 @@
         <div class="members">
         </div>
         <div class="main-field">
+            <div class="chat-field">
+            </div>
+            <form id="chat-form">
+                <p><input type="text" name="text" id="form-text"></p>
+                <p><input type="submit" value="Send">
+                    <input type="reset" value="Reset"></p>
+            </form>
         </div>
         <div class="chat-info">
             <h2 class="chat-name">chat name</h2>
@@ -22,7 +29,7 @@
             const chatDesc = document.querySelector('.chat-desc');
             const chatAdmin = document.querySelector('.chat-admin');
             const members = document.querySelector('.members');
-            const field = document.querySelector('.main-field');
+            const field = document.querySelector('.chat-field');
             const url = window.location.href;
             const path = 'account/chat/';
             const index = url.slice((url.lastIndexOf(path))+path.length);
@@ -60,6 +67,89 @@
                     field.insertAdjacentElement('beforeend', newElem)
                 }
             }).catch(error => console.log(error.message));
+            async function getData() {
+                let response = fetch(chatURL);
+                let result = await response.then(res => res.json());
+                chatName.innerHTML = result.chat.name;
+                chatDesc.innerHTML = result.chat.description;
+                chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
+                for (let user of result.users) {
+                    let newElem = document.createElement('div');
+                    newElem.id = 'user' + user.id;
+                    let username = `<p id="username${user.id}">${user.username}</p>`;
+                    let picture;
+                    if (user.picture) {
+                        picture = `<p><img src="${user.picture}" alt=${user.username}></p>`;
+                    } else {
+                        let url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
+                        picture = `<p><img src="${url}" alt=${user.username}></p>`;
+                    };
+                    newElem.innerHTML = picture + username;
+                    members.insertAdjacentElement('beforeend', newElem);
+                };
+                for (let msg of result.messages) {
+                    let newElem = document.createElement('div');
+                    newElem.id = 'msg' + msg.id;
+                    let content = `<p>${msg.content}</p>`;
+                    let added = `<p>${msg.added}</p>`;
+                    let authorName = document.getElementById(`username${msg.author}`);
+                    if (authorName){
+                        authorName = `<p>${authorName.textContent}</p>`;
+                    } else {
+                        authorName = '<p>Ex-member</p>';
+                    };
+                    newElem.innerHTML = authorName + content + added;
+                    field.insertAdjacentElement('beforeend', newElem)
+                };
+                const ws = new WebSocket('ws://127.0.0.1:5000');
+                ws.onopen = () => {
+                    console.log('connected');
+                    ws.send(JSON.stringify({notification:{
+                        user: result.current.username,
+                        status: 'joined',
+                    }}));
+                };
+                ws.onmessage = (message) => {
+                    let msg = JSON.parse(message.data);
+                    if (msg.notification) {
+                        let {name, status} = msg.notification;
+                        let newElem = document.createElement('div');
+                        newElem.className = 'chat-notification';
+                        newElem.innerHTML = `User ${user} ${status} the chat`;
+                        field.insertAdjacentElement('beforeend', newElem);
+                    } else {
+                        let {name, text} = msg.content;
+                        let newElem = document.createElement('div');
+                        newElem.className = 'chat-msg';
+                        let author = `<p>${user}</p>`;
+                        let content = `<p>${text}</p>`;
+                        let added = `<p>${new Date().toLocaleString()}</p>`;
+                        newElem.innerHTML = author + content + added;
+                        field.insertAdjacentElement('beforeend', newElem);
+                    };
+                };
+                function send (event) {
+                    event.preventDefault();
+                    let text = document.getElementById('form-text').value;
+                    fetch(msgurl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        body: JSON.stringify({
+                            author: result.current.id,
+                            chat: result.chat.id,
+                            content: text,
+                        })
+                    });
+                    ws.send(JSON.stringify({content:{
+                        user: result.current.username,
+                        text: text,
+                    }}))
+                };
+                let form = document.getElementById('chat-form');
+                form.addEventListener('submit', send);
+            };
         </script>
     </body>
 </html>

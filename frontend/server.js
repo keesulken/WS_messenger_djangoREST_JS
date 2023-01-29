@@ -4,10 +4,9 @@ import {v4 as uuid} from "uuid";
 
 const wss = new WebSocketServer({port: 5000});
 const clients = {}
-const messages = [];
+// const messages = [];
 
 wss.on('connection', (ws, req) => {
-    console.log({'req': req});
     const id = uuid();
     clients[id] = ws;
     console.log(`new client ${id}`);
@@ -15,11 +14,20 @@ wss.on('connection', (ws, req) => {
     ws.on('message', (rawMsg) => {
         let msg = JSON.parse(rawMsg);
         console.log(msg);
-        console.log(msg.initial)
-        // messages.push({name, message});
-        // for (let id in clients) {
-        //     clients[id].send(JSON.stringify([{name, message}]));
-        // }
+        if (msg.notification) {
+            // messages.push({});
+            for (let id in clients) {
+                clients[id].send(JSON.stringify({notification:{name: msg.notification.user,
+                    status: msg.notification.status,
+                }}));
+            };
+        } else {
+            for (let id in clients) {
+                clients[id].send(JSON.stringify({content:{name: msg.content.user,
+                    text: msg.content.text,
+                }}));
+            };
+        };
     });
 
     wss.on('close', () => {

@@ -27,6 +27,13 @@
         <div class="members">
         </div>
         <div class="main-field">
+            <div class="chat-field">
+            </div>
+            <form id="chat-form">
+                <p><input type="text" name="text" id="form-text"></p>
+                <p><input type="submit" value="Send">
+                    <input type="reset" value="Reset"></p>
+            </form>
         </div>
         <div class="chat-info">
             <h2 class="chat-name">chat name</h2>
@@ -38,12 +45,14 @@
             const chatDesc = document.querySelector('.chat-desc');
             const chatAdmin = document.querySelector('.chat-admin');
             const members = document.querySelector('.members');
-            const field = document.querySelector('.main-field');
+            const field = document.querySelector('.chat-field');
             const url = window.location.href;
             const path = 'account/chat/';
             const index = url.slice((url.lastIndexOf(path))+path.length);
             const chatURL = `http://127.0.0.1:8000/api/v1/chatroom/${index}`;
-            fetch(chatURL).then(res => res.json()).then(result => {
+            async function getData() {
+                let response = fetch(chatURL);
+                let result = await response.then(res => res.json());
                 chatName.innerHTML = result.chat.name;
                 chatDesc.innerHTML = result.chat.description;
                 chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
@@ -74,8 +83,46 @@
                     };
                     newElem.innerHTML = authorName + content + added;
                     field.insertAdjacentElement('beforeend', newElem)
-                }
-            }).catch(error => console.log(error.message));
+                };
+                const ws = new WebSocket('ws://127.0.0.1:5000');
+                ws.onopen = () => {
+                    console.log('connected');
+                    ws.send(JSON.stringify({notification:{
+                        user: result.current.username,
+                        status: 'joined',
+                    }}));
+                };
+                ws.onmessage = (message) => {
+                    let msg = JSON.parse(message.data);
+                    if (msg.notification) {
+                        let {name, status} = msg.notification;
+                        let newElem = document.createElement('div');
+                        newElem.className = 'chat-notification';
+                        newElem.innerHTML = `User ${name} ${status} the chat`;
+                        field.insertAdjacentElement('beforeend', newElem);
+                    } else {
+                        let {name, text} = msg.content;
+                        let newElem = document.createElement('div');
+                        newElem.className = 'chat-msg';
+                        let author = `<p>${name}</p>`;
+                        let content = `<p>${text}</p>`;
+                        let added = `<p>${new Date().toLocaleString()}</p>`;
+                        newElem.innerHTML = author + content + added;
+                        field.insertAdjacentElement('beforeend', newElem);
+                    };
+                };
+                function send (event) {
+                    event.preventDefault();
+                    let text = document.getElementById('form-text').value;
+                    ws.send(JSON.stringify({content:{
+                        user: result.current.username,
+                        text: text,
+                    }}))
+                };
+                let form = document.getElementById('chat-form');
+                form.addEventListener('submit', send);
+            };
+            getData();
         </script>
     </body>
 </html>

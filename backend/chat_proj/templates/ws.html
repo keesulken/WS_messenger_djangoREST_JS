@@ -10,27 +10,21 @@
 
         </div>
         <script>
-            function f1 () {
-                const res = fetch('http://127.0.0.1:8000/api/v1/chatroom/1');
-                return res.json()
-            }
-            function f2 () {
-                const res = fetch('http://127.0.0.1:8000/api/v1/chatroom/1');
-                return res.json()
-            }
-            function f3 () {
-                const res = fetch('http://127.0.0.1:8000/api/v1/chatroom/1');
-                return res.json()
-            }
-            async function go() {
-                let a = await f1();
-                console.log(a);
-                let b = await f2();
+            let data;
+            async function getData(){
+                let a = fetch('http://127.0.0.1:8000/api/v1/chatroom/1');
+                let res = await a
+                .then(resp => resp.json());
+                console.log(res);
+                return res;
+            };
+            async function getThis(){
+                let b = await getData();
                 console.log(b);
-                let c = await f3();
-                console.log(c);
-            }
-            go();
+                return b;
+            };
+            getThis().then(dataThis => console.log(dataThis));
+            console.log(data);
         </script>
     </body>
 </html>
