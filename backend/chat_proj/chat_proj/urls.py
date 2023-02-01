@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 
 from chat.views import *
@@ -25,24 +25,27 @@ from rest_framework import routers
 user_router = routers.SimpleRouter()
 user_router.register(r'user', UserViewSet)
 
-author_router = routers.SimpleRouter()
-author_router.register(r'author', AuthorViewSet)
-
 chat_router = routers.SimpleRouter()
 chat_router.register(r'chat', ChatRoomViewSet)
 
+msg_router = routers.SimpleRouter()
+msg_router.register(r'msg', MessageViewSet)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('auth/', include('rest_framework.urls')),
     path('api/v1/profile/', ProfileAPIView.as_view()),
     path('account/profile/', TemplateView.as_view(template_name='prof.html')),
     path('account/chat/<int:pk>', TemplateView.as_view(template_name='chat.html')),
     path('account/ws/1', TemplateView.as_view(template_name='ws.html')),
     path('api/v1/', include(user_router.urls)),
-    path('api/v1/', include(author_router.urls)),
     path('api/v1/', include(chat_router.urls)),
+    path('api/v1/', include(msg_router.urls)),
     path('api/v1/chatroom/<int:pk>', ChatDetailAPIView.as_view()),
-    path('register/', RegisterView.as_view(template_name='signup.html')),
+    # path('api/v1/chatroom/<int:chat_id>/new_msg', MessageAPIView.as_view()),
+    path('api/v1/chatroom/new_msg', MessageAPIView.as_view()),
+    path('register/', RegisterView.as_view(template_name='signupnew.html')),
+    path('api/v1/auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
 ]
 
 if settings.DEBUG:
