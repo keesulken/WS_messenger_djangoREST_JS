@@ -2,9 +2,13 @@ from django.views.generic import CreateView
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view
+from django.contrib.auth import get_user_model
 
 from .serializers import *
 from .forms import *
+
+User = get_user_model()
 
 
 class RegisterView(CreateView):
@@ -74,3 +78,11 @@ class MessageAPIView(APIView):
         msg.chat = request.data['chat']
         msg.save()
         return Response(status=status.HTTP_201_CREATED)
+
+
+@api_view(['PATCH'])
+def get_token(request):
+    user = User.objects.get(username=request.data['username'])
+    user.token = request.data['auth_token']
+    user.save()
+    return Response(status=status.HTTP_204_NO_CONTENT)

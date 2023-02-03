@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Login</title>
+        <link rel="stylesheet" href="">
+    </head>
+    <body>
+        <div class="root">
+            <h3 class="error-str"></h3>
+            <form>
+                <p><input type="text" id="username"></p>
+                <p><input type="text" id="password"></p>
+                <p>
+                    <input type="submit" value="Login">
+                    <input type="reset" value="Reset">
+                </p>
+            </form>
+        </div>
+        <script>
+            const form = document.querySelector('form');
+            const errorStr = document.querySelector('.error-str');
+            const username = document.getElementById('username');
+            const password = document.getElementById('password');
+            const successURL = 'http://127.0.0.1:8000/api/v1/user/';
+            const successMeta = `<meta http-equiv="refresh" content="0; URL=${successURL}">`;
+            const getTokenURL = 'http://127.0.0.1:8000/auth/token/login';
+            const writeTokenURL = 'http://127.0.0.1:8000/api/v1/gettoken/';
+            function getToken () {
+                event.preventDefault();
+                let params = {
+                            username: username.value,
+                            password: password.value,
+                        };
+                let options = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json;charset=utf-8'
+                        },
+                        body: JSON.stringify(params)
+                    };
+                fetch(getTokenURL, options).then(res =>{
+                    if (res.status === 200) {
+                        console.log('ok, moving forward...');
+                        return res.json()
+                    } else if (res.status === 400) {
+                        errorStr.innerHTML = 'Incorrect username or password';
+                    } else {
+                        errorStr.innerHTML = 'Unknown error, please try again later';
+                    };
+                }).then(result => {
+                    if (result) {
+                        params['auth_token'] = result.auth_token;
+                        options['method'] = 'PATCH';
+                        options['body'] = JSON.stringify(params);
+                        console.log(options);
+                        fetch(writeTokenURL, options).then(res => {
+                            if (res.status === 204) {
+                                document.querySelector('head').insertAdjacentHTML('beforeend', successMeta);
+                            } else {
+                                errorStr.innerHTML = 'Internal server error, please try again later';
+                            };
+                        })
+                    }
+                })
+            };
+            form.addEventListener('submit', getToken);
+        </script>
+    </body>
+</html>

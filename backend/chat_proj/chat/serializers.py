@@ -17,8 +17,8 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id',
                   'username',
-                  'token',)
-                  # 'picture',)
+                  'token',
+                  'picture',)
 
 
 class SingleChatSerializer(serializers.ModelSerializer):
@@ -51,4 +51,5 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'author',
                   'content',
+                  'chat',
                   'added',)

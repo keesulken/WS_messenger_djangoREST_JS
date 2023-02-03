@@ -1,12 +1,13 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.contrib.auth import get_user_model
-
-user = get_user_model()
 
 
-class User(user):
+class User(AbstractUser):
     picture = models.ImageField(upload_to='profile_pics/', blank=True)
-    token = models.CharField(max_length=255, default=None)
+    token = models.CharField(max_length=255, blank=True)
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['picture', 'token']
 
     @property
     def get_picture_url(self):
