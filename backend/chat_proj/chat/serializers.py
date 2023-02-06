@@ -8,8 +8,7 @@ class AuthorizedUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id',
                   'username',
-                  'picture',
-                  'token',)
+                  'picture',)
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,7 +16,6 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id',
                   'username',
-                  'token',
                   'picture',)
 
 

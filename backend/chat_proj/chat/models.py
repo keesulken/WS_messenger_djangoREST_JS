@@ -4,10 +4,9 @@ from django.db import models
 
 class User(AbstractUser):
     picture = models.ImageField(upload_to='profile_pics/', blank=True)
-    token = models.CharField(max_length=255, blank=True)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['picture', 'token']
+    REQUIRED_FIELDS = ['picture']
 
     @property
     def get_picture_url(self):
