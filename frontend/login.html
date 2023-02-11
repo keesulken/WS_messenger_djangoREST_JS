@@ -26,7 +26,6 @@
             const successMeta = `<meta http-equiv="refresh" content="0; URL=${successURL}">`;
             const getTokenURL = 'http://127.0.0.1:8000/auth/token/login';
             const writeTokenURL = 'http://127.0.0.1:8000/api/v1/gettoken/';
-            // use localstorage here, save token
             function getToken () {
                 event.preventDefault();
                 let params = {
