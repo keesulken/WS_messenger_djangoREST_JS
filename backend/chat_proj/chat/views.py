@@ -78,11 +78,3 @@ class MessageAPIView(APIView):
         msg.chat = request.data['chat']
         msg.save()
         return Response(status=status.HTTP_201_CREATED)
-
-
-@api_view(['PATCH'])
-def get_token(request):
-    user = User.objects.get(username=request.data['username'])
-    user.token = request.data['auth_token']
-    user.save()
-    return Response(status=status.HTTP_204_NO_CONTENT)

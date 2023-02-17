@@ -25,7 +25,6 @@
             const successURL = 'http://127.0.0.1:8000/api/v1/user/';
             const successMeta = `<meta http-equiv="refresh" content="0; URL=${successURL}">`;
             const getTokenURL = 'http://127.0.0.1:8000/auth/token/login';
-            const writeTokenURL = 'http://127.0.0.1:8000/api/v1/gettoken/';
             function getToken () {
                 event.preventDefault();
                 let params = {
@@ -50,17 +49,10 @@
                     };
                 }).then(result => {
                     if (result) {
-                        params['auth_token'] = result.auth_token;
-                        options['method'] = 'PATCH';
-                        options['body'] = JSON.stringify(params);
-                        console.log(options);
-                        fetch(writeTokenURL, options).then(res => {
-                            if (res.status === 204) {
-                                document.querySelector('head').insertAdjacentHTML('beforeend', successMeta);
-                            } else {
-                                errorStr.innerHTML = 'Internal server error, please try again later';
-                            };
-                        })
+                        localStorage.setItem('token', result['auth_token']);
+                        document.querySelector('head').insertAdjacentHTML('beforeend', successMeta);
+                    } else {
+                        errorStr.innerHTML = 'Internal server error, please try again later';
                     }
                 })
             };

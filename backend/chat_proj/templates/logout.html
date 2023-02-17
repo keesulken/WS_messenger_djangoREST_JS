@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Logout page</title>
+        <link rel="stylesheet" href="">
+    </head>
+    <body>
+        <h2 id="main-str">You sure you want to logout?</h2>
+        <button id="main-btn">Logout</button>
+        <script>
+            const btn = document.getElementById('main-btn');
+            const str = document.getElementById('main-str');
+            const redirURL = 'http://127.0.0.1:8000/api/v1/user/';
+            const redir = `<meta http-equiv="refresh" content="0; URL=${redirURL}">`;
+            const logoutURL = 'http://127.0.0.1:8000/auth/token/logout';
+            const token = localStorage.getItem('token');
+            function destroyToken () {
+                let options = {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                    },
+                };
+                fetch(logoutURL, options).then(res =>{
+                    if (res.status === 204) {
+                        localStorage.removeItem('token');
+                        document.querySelector('head').insertAdjacentHTML('beforeend', redir);
+                    } else {
+                        str.innerHTML = 'Internal server error, please try again later';
+                    };
+                });
+            };
+            btn.addEventListener('click', destroyToken);
+        </script>
+    </body>
+</html>

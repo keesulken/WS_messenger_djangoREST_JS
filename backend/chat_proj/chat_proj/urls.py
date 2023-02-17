@@ -34,18 +34,24 @@ msg_router.register(r'msg', MessageViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/profile/', ProfileAPIView.as_view()),
-    path('api/v1/gettoken/', get_token),
     path('account/profile/', TemplateView.as_view(template_name='prof.html')),
     path('account/chat/<int:pk>', TemplateView.as_view(template_name='chat.html')),
     path('account/ws/1', TemplateView.as_view(template_name='ws.html')),
-    path('api/v1/', include(user_router.urls)),
-    path('api/v1/', include(chat_router.urls)),
-    path('api/v1/', include(msg_router.urls)),
+
     path('api/v1/chatroom/<int:pk>', ChatDetailAPIView.as_view()),
     # path('api/v1/chatroom/<int:chat_id>/new_msg', MessageAPIView.as_view()),
     path('api/v1/chatroom/new_msg', MessageAPIView.as_view()),
-    path('register/', RegisterView.as_view(template_name='signupnew.html')),
+
+    path('register/', RegisterView.as_view(template_name='signup.html')),
     path('login/', RegisterView.as_view(template_name='login.html')),
+    path('logout/', TemplateView.as_view(template_name='logout.html')),
+
+
+    path('api/v1/', include(user_router.urls)),
+    path('api/v1/', include(chat_router.urls)),
+    path('api/v1/', include(msg_router.urls)),
+
+
     path('api/v1/auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
 ]
