@@ -39,6 +39,7 @@ urlpatterns = [
     path('account/ws/1', TemplateView.as_view(template_name='ws.html')),
 
     path('api/v1/chatroom/<int:pk>', ChatDetailAPIView.as_view()),
+    path('api/v1/user_chats/<int:user_id>', UserChatAPIView.as_view()),
     # path('api/v1/chatroom/<int:chat_id>/new_msg', MessageAPIView.as_view()),
     path('api/v1/chatroom/new_msg', MessageAPIView.as_view()),
 

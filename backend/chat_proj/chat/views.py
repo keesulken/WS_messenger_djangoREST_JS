@@ -78,3 +78,27 @@ class MessageAPIView(APIView):
         msg.chat = request.data['chat']
         msg.save()
         return Response(status=status.HTTP_201_CREATED)
+
+
+class UserChatAPIView(APIView):
+    def get(self, request, **kwargs):
+        user = User.objects.get(id=kwargs['user_id'])
+        chats = []
+        for i in ChatRoom.objects.all():
+            if user in i.user_list.all():
+                chats.append(i)
+        chat_list = ChatRoomSerializer(chats, many=True).data
+        return Response({'chats': chat_list})
+
+
+class NewChatAPIView(APIView):
+    def post(self, request, **kwargs):
+        chat = ChatRoom()
+        admin = User.objects.get(username=request.data['admin'])
+        chat.name = request.data['name']
+        chat.description = request.data['desc']
+        chat.admin_id = admin.id
+        chat.save()
+        chat.user_list.add(admin)
+        return Response(status=status.HTTP_201_CREATED)
+

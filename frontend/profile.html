@@ -30,7 +30,7 @@
         </div>
     </div>
     <div class="chat-list">
-        <button>Create New Chat</button>
+        <button id="new-chat-btn">Create New Chat</button>
     </div>
     <script>
         const token = localStorage.getItem('token');
@@ -44,6 +44,8 @@
         const allChatsBlock = document.querySelector('.chat-list');
         const personalBlock = document.querySelector('.personal');
         const userChatsBlock = document.querySelector('.user-chats');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const newChatURL = '';
         const usersURL = 'http://127.0.0.1:8000/api/v1/user/';
         const allChatsURL = 'http://127.0.0.1:8000/api/v1/chat/';
         const profileURL = 'http://127.0.0.1:8000/api/v1/auth/users/me/';
@@ -52,6 +54,44 @@
             headers: {
                 'Authorization': `Token ${token}`,
             },
+        };
+        function newChat() {
+            newChatBtn.style.display = 'none';
+            let inputBlock = document.createElement('form');
+            let nameStr = '<p>Chat name</p>';
+            let name = '<p><input type="text" id="new-chat-name"></p>';
+            let descStr = '<p>Chat description</p>';
+            let desc = '<p><input type="text" id="new-chat-desc"></p>';
+            let btns = '<p><input type="submit" value="Submit"><input type="reset" value="Reset"></p>';
+            inputBlock.id = 'new-chat-form';
+            inputBlock.innerHTML = nameStr + name + descStr + desc + btns;
+            allChatsBlock.insertAdjacentElement('afterbegin', inputBlock);
+        };
+        function makeNewChat() {
+            event.preventDefault();
+            let name = document.getElementById('new-chat-name').value;
+            let desc = document.getElementById('new-chat-desc').value;
+            let admin = document.getElementById('prof-name').textContent;
+            let params = {
+                name: name,
+                desc: desc,
+                admin: admin,
+            };
+            let options = {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json;charset=utf-8',
+                },
+                body: JSON.stringify(params),
+            };
+            fetch(newChatURL, options).then(res => {
+                if (res.status === 201) {
+                    // redir to new chat
+                } else {
+                    // error msg
+                }
+            })
         };
         fetch(usersURL).then(res => res.json()).then(result => {
             for (let user of result) {
@@ -84,7 +124,7 @@
         fetch(profileURL, options).then(res => res.json()).then(result => {
             let newElem = document.createElement('div');
             newElem.id = 'profile' + result.id;
-            let username = `<p>${result.username}<p>`;
+            let username = `<p id="prof-name">${result.username}<p>`;
             let button = `<button class="btn-edit-${result.id}">Edit profile</button>`;
             let picture;
             if (result.picture) {
@@ -96,21 +136,27 @@
             newElem.innerHTML = picture + username + button;
             personalBlock.insertAdjacentElement('beforeend', newElem);
             let userNoteToHide = document.querySelector(`#user${result.id}`);
-            console.log(userNoteToHide.id)
             if (userNoteToHide){
                 userNoteToHide.style.display = 'none';
             };
-            // const chats = result.chat_list;
-            // for (let chat of chats) {
-            //     let newElem = document.createElement('div');
-            //     newElem.id = 'profile-chat' + chat.id;
-            //     let chatName = `<p>${chat.name}<p>`;
-            //     let button = `<button class="btn-pers-chat-${chat.id}">Continue chatting</button>`;
-            //     let activity = `<p>${chat.last_activity}<p>`;
-            //     newElem.innerHTML = chatName + activity + button;
-            //     userChatsBlock.insertAdjacentElement('beforeend', newElem);
-            // }
+            const userChatsURL = `http://127.0.0.1:8000/api/v1/user_chats/${result.id}`;
+            fetch(userChatsURL).then(res => res.json()).then(result => {
+                for (let chat of result.chats) {
+                    let newElem = document.createElement('div');
+                    newElem.id = 'profile-chat' + chat.id;
+                    let chatName = `<p>${chat.name}<p>`;
+                    let button = `<button class="btn-pers-chat-${chat.id}">Continue chatting</button>`;
+                    let activity = `<p>${chat.last_activity}<p>`;
+                    newElem.innerHTML = chatName + activity + button;
+                    userChatsBlock.insertAdjacentElement('beforeend', newElem);
+                    let chatNoteToHide = document.querySelector(`#chat${chat.id}`);
+                    if (chatNoteToHide){
+                        chatNoteToHide.style.display = 'none';
+                    };
+                };
+            }).catch(error => console.log(error.message));
         }).catch(error => console.log(error.message));
+        newChatBtn.addEventListener('click', newChat);
     </script>
 </body>
 </html>
