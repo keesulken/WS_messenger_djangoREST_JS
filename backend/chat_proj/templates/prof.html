@@ -33,14 +33,26 @@
         <button>Create New Chat</button>
     </div>
     <script>
+        const token = localStorage.getItem('token');
+        const unauthURL = 'http://127.0.0.1:8000/login';
+        const unauthRedir = `<meta http-equiv='refresh' content='0; URL=${unauthURL}'>`;
+        if (!token) {
+            document.querySelector('head').insertAdjacentHTML('beforeend', unauthRedir);
+        };
         const usersBlock = document.querySelector('.users');
         const profileBlock = document.querySelector('.profile');
         const allChatsBlock = document.querySelector('.chat-list');
         const personalBlock = document.querySelector('.personal');
         const userChatsBlock = document.querySelector('.user-chats');
-        const usersURL = 'http://127.0.0.1:8000/api/v1/author/';
+        const usersURL = 'http://127.0.0.1:8000/api/v1/user/';
         const allChatsURL = 'http://127.0.0.1:8000/api/v1/chat/';
-        const profileURL = 'http://127.0.0.1:8000/api/v1/profile/';
+        const profileURL = 'http://127.0.0.1:8000/api/v1/auth/users/me/';
+        const options = {
+            method: 'GET',
+            headers: {
+                'Authorization': `Token ${token}`,
+            },
+        };
         fetch(usersURL).then(res => res.json()).then(result => {
             for (let user of result) {
                 let newElem = document.createElement('div');
@@ -69,35 +81,35 @@
                 allChatsBlock.insertAdjacentElement('beforeend', newElem);
             };
         }).catch(error => console.log(error.message));
-        fetch(profileURL).then(res => res.json()).then(result => {
-            const user = result.user;
+        fetch(profileURL, options).then(res => res.json()).then(result => {
             let newElem = document.createElement('div');
-            newElem.id = 'profile' + user.id;
-            let username = `<p>${user.username}<p>`;
-            let button = `<button class="btn-edit-${user.id}">Edit profile</button>`;
+            newElem.id = 'profile' + result.id;
+            let username = `<p>${result.username}<p>`;
+            let button = `<button class="btn-edit-${result.id}">Edit profile</button>`;
             let picture;
-            if (user.picture) {
-                picture = `<p><img src="${user.picture}" alt="${user.username}"</p>`;
+            if (result.picture) {
+                picture = `<p><img src="${result.picture}" alt="${result.username}"</p>`;
             } else {
-                url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
-                picture = `<p><img src="${url}" alt="${user.username}"</p>`;
+                let url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
+                picture = `<p><img src="${url}" alt="${result.username}"</p>`;
             };
             newElem.innerHTML = picture + username + button;
             personalBlock.insertAdjacentElement('beforeend', newElem);
-            let userNoteToHide = document.querySelector(`#user${user.id}`);
+            let userNoteToHide = document.querySelector(`#user${result.id}`);
+            console.log(userNoteToHide.id)
             if (userNoteToHide){
                 userNoteToHide.style.display = 'none';
             };
-            const chats = result.chat_list;
-            for (let chat of chats) {
-                let newElem = document.createElement('div');
-                newElem.id = 'profile-chat' + chat.id;
-                let chatName = `<p>${chat.name}<p>`;
-                let button = `<button class="btn-pers-chat-${chat.id}">Continue chatting</button>`;
-                let activity = `<p>${chat.last_activity}<p>`;
-                newElem.innerHTML = chatName + activity + button;
-                userChatsBlock.insertAdjacentElement('beforeend', newElem);
-            }
+            // const chats = result.chat_list;
+            // for (let chat of chats) {
+            //     let newElem = document.createElement('div');
+            //     newElem.id = 'profile-chat' + chat.id;
+            //     let chatName = `<p>${chat.name}<p>`;
+            //     let button = `<button class="btn-pers-chat-${chat.id}">Continue chatting</button>`;
+            //     let activity = `<p>${chat.last_activity}<p>`;
+            //     newElem.innerHTML = chatName + activity + button;
+            //     userChatsBlock.insertAdjacentElement('beforeend', newElem);
+            // }
         }).catch(error => console.log(error.message));
     </script>
 </body>
