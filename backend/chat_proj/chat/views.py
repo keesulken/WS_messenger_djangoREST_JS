@@ -100,5 +100,5 @@ class NewChatAPIView(APIView):
         chat.admin_id = admin.id
         chat.save()
         chat.user_list.add(admin)
-        return Response(status=status.HTTP_201_CREATED)
+        return Response({'id': chat.pk}, status=status.HTTP_201_CREATED)
 

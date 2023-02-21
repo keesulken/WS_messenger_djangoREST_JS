@@ -1,0 +1,14 @@
+body {
+    display: flex;
+    flex-flow: row nowrap;
+}
+
+img {
+    height: 30px;
+    width: 30px;
+}
+
+.users div {
+    display: flex;
+    flex-flow: row nowrap;
+}

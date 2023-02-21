@@ -45,6 +45,7 @@
         const personalBlock = document.querySelector('.personal');
         const userChatsBlock = document.querySelector('.user-chats');
         const newChatBtn = document.getElementById('new-chat-btn');
+        const newChatURL = 'http://127.0.0.1:8000/api/v1/chatroom/new/';
         const usersURL = 'http://127.0.0.1:8000/api/v1/user/';
         const allChatsURL = 'http://127.0.0.1:8000/api/v1/chat/';
         const profileURL = 'http://127.0.0.1:8000/api/v1/auth/users/me/';
@@ -56,14 +57,60 @@
         };
         function newChat() {
             newChatBtn.style.display = 'none';
-            let inputBlock = document.createElement('div');
+            let inputBlock = document.createElement('form');
             let nameStr = '<p>Chat name</p>';
             let name = '<p><input type="text" id="new-chat-name"></p>';
             let descStr = '<p>Chat description</p>';
             let desc = '<p><input type="text" id="new-chat-desc"></p>';
-            let btns = '<p><input type="submit" value="Submit"><input type="reset" value="reset"></p>';
+            let btns = '<p><input type="submit" value="Submit"><input type="reset" value="Reset"></p>';
+            inputBlock.id = 'new-chat-form';
             inputBlock.innerHTML = nameStr + name + descStr + desc + btns;
             allChatsBlock.insertAdjacentElement('afterbegin', inputBlock);
+            inputBlock.addEventListener('submit', makeNewChat);
+        };
+        function makeNewChat() {
+            event.preventDefault();
+            let errorStr = document.getElementById('error-str');
+            if (!errorStr) {
+                errorStr = document.createElement('h4');
+                errorStr.id = 'error-str';
+                allChatsBlock.insertAdjacentElement('afterbegin', errorStr);
+            };
+            let name = document.getElementById('new-chat-name').value;
+            let desc = document.getElementById('new-chat-desc').value;
+            let admin = document.getElementById('prof-name').textContent;
+            let params = {
+                name: name,
+                desc: desc,
+                admin: admin,
+            };
+            let options = {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json;charset=utf-8',
+                },
+                body: JSON.stringify(params),
+            };
+            if (!name || !desc) {
+                errorStr.innerHTML = 'All fields are required';
+            } else if ((name.length < 4) || (desc.length < 8)) {
+                errorStr.innerHTML = 'Name must be at least 4 symbols long, description must be at least 8 symbols long';
+            } else if (name === desc) {
+                errorStr.innerHTML = 'Name and description must differ';
+            } else {
+                fetch(newChatURL, options).then(res => {
+                    if (res.status === 201) {
+                        return res.json();
+                    } else {
+                        errorStr.innerHTML = 'Internal server error please try again later';
+                    };
+                }).then(result => {
+                    let newChatURL = `http://127.0.0.1:8000/api/v1/chat/${result.id}`;
+                    let redir = `<meta http-equiv='refresh' content='0; URL=${newChatURL}'>`;
+                    document.querySelector('head').insertAdjacentHTML('beforeend', redir);
+                }).catch(error => console.log(error.message));
+            };
         };
         fetch(usersURL).then(res => res.json()).then(result => {
             for (let user of result) {
@@ -96,7 +143,7 @@
         fetch(profileURL, options).then(res => res.json()).then(result => {
             let newElem = document.createElement('div');
             newElem.id = 'profile' + result.id;
-            let username = `<p>${result.username}<p>`;
+            let username = `<p id="prof-name">${result.username}<p>`;
             let button = `<button class="btn-edit-${result.id}">Edit profile</button>`;
             let picture;
             if (result.picture) {
