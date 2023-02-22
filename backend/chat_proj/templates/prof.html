@@ -55,6 +55,8 @@
                 'Authorization': `Token ${token}`,
             },
         };
+
+
         function newChat() {
             newChatBtn.style.display = 'none';
             let inputBlock = document.createElement('form');
@@ -68,6 +70,8 @@
             allChatsBlock.insertAdjacentElement('afterbegin', inputBlock);
             inputBlock.addEventListener('submit', makeNewChat);
         };
+
+
         function makeNewChat() {
             event.preventDefault();
             let errorStr = document.getElementById('error-str');
@@ -112,12 +116,57 @@
                 }).catch(error => console.log(error.message));
             };
         };
+
+
+        function startPrivateChat () {
+            let profName = document.getElementById('prof-name').textContent;
+            let companion = event.target.className;
+            let mainMatch = document.getElementById(`priv-chat-${profName}to${companion}`);
+            let reverseMatch = document.getElementById(`priv-chat-${companion}to${profName}`);
+            if (mainMatch) {
+                let link = mainMatch.querySelector('a').href;
+                let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`;
+                document.querySelector('head').insertAdjacentHTML('beforeend', redir);
+            } else if (reverseMatch) {
+                let link = reverseMatch.querySelector('a').href;
+                let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`;
+                document.querySelector('head').insertAdjacentHTML('beforeend', redir);
+            } else {
+                let params = {
+                    name: profName + 'to' + companion,
+                    init: profName,
+                    companion: companion,
+                };
+                let options = {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Token ${token}`,
+                        'Content-Type': 'application/json;charset=utf-8',
+                    },
+                    body: JSON.stringify(params),
+                };
+                let privChatURL = 'http://127.0.0.1:8000/api/v1/chatroom/new_private/';
+                fetch(privChatURL, options).then(res => {
+                    if (res.status === 201) {
+                        return res.json();
+                    } else {
+                        // error msg
+                    };
+                }).then(result => {
+                    let newChatURL = `http://127.0.0.1:8000/api/v1/chat/${result.id}`;
+                    let redir = `<meta http-equiv='refresh' content='0; URL=${newChatURL}'>`;
+                    document.querySelector('head').insertAdjacentHTML('beforeend', redir);
+                }).catch(error => console.log(error.message));
+            };
+        };
+
+
         fetch(usersURL).then(res => res.json()).then(result => {
             for (let user of result) {
                 let newElem = document.createElement('div');
                 newElem.id = 'user' + user.id;
                 let username = `<p>${user.username}<p>`;
-                let button = `<button class="btn-user-${user.id}">Start chatting</button>`;
+                let button = `<button class="${user.username}">Start chatting</button>`;
                 let picture;
                 if (user.picture) {
                     picture = `<p><img src="${user.picture}" alt="${user.username}"</p>`;
@@ -127,19 +176,30 @@
                 };
                 newElem.innerHTML = picture + username + button;
                 usersBlock.insertAdjacentElement('beforeend', newElem);
+                newElem.querySelector('button').addEventListener('click', startPrivateChat);
             };
         }).catch(error => console.log(error.message));
+
+
         fetch(allChatsURL).then(res => res.json()).then(result => {
             for (let chat of result) {
                 let newElem = document.createElement('div');
-                newElem.id = 'chat' + chat.id;
+                if (chat.private) {
+                    newElem.style.display = 'none';
+                    newElem.id = 'priv-chat-' + chat.name;
+                } else {
+                    newElem.id = 'chat' + chat.id;
+                };
                 let chatName = `<p>${chat.name}<p>`;
-                let button = `<button class="btn-chat-${chat.id}">Join chat</button>`;
+                let button = `<a class="a-chat-${chat.id}" href="http://127.0.0.1:8000/api/v1/chat/${chat.id}"
+                >Join chat</a>`;
                 let activity = `<p>${chat.last_activity}<p>`;
                 newElem.innerHTML = chatName + activity + button;
                 allChatsBlock.insertAdjacentElement('beforeend', newElem);
             };
         }).catch(error => console.log(error.message));
+
+
         fetch(profileURL, options).then(res => res.json()).then(result => {
             let newElem = document.createElement('div');
             newElem.id = 'profile' + result.id;
@@ -161,20 +221,25 @@
             const userChatsURL = `http://127.0.0.1:8000/api/v1/user_chats/${result.id}`;
             fetch(userChatsURL).then(res => res.json()).then(result => {
                 for (let chat of result.chats) {
-                    let newElem = document.createElement('div');
-                    newElem.id = 'profile-chat' + chat.id;
-                    let chatName = `<p>${chat.name}<p>`;
-                    let button = `<button class="btn-pers-chat-${chat.id}">Continue chatting</button>`;
-                    let activity = `<p>${chat.last_activity}<p>`;
-                    newElem.innerHTML = chatName + activity + button;
-                    userChatsBlock.insertAdjacentElement('beforeend', newElem);
-                    let chatNoteToHide = document.querySelector(`#chat${chat.id}`);
-                    if (chatNoteToHide){
-                        chatNoteToHide.style.display = 'none';
+                    if (!chat.private) {
+                        let newElem = document.createElement('div');
+                        newElem.id = 'profile-chat' + chat.id;
+                        let chatName = `<p>${chat.name}<p>`;
+                        let button = `<a class="a-pers-chat-${chat.id}" href="http://127.0.0.1:8000/api/v1/chat/${chat.id}"
+                        >Continue chatting</a>`;
+                        let activity = `<p>${chat.last_activity}<p>`;
+                        newElem.innerHTML = chatName + activity + button;
+                        userChatsBlock.insertAdjacentElement('beforeend', newElem);
+                        let chatNoteToHide = document.querySelector(`#chat${chat.id}`);
+                        if (chatNoteToHide){
+                            chatNoteToHide.style.display = 'none';
+                        };
                     };
                 };
             }).catch(error => console.log(error.message));
         }).catch(error => console.log(error.message));
+
+
         newChatBtn.addEventListener('click', newChat);
     </script>
 </body>

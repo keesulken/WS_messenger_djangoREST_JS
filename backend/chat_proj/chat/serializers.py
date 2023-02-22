@@ -37,6 +37,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
                   'name',
                   'admin_id',
                   'description',
+                  'private',
                   'last_activity',
                   'user_list',)
 
