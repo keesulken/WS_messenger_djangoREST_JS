@@ -113,3 +113,12 @@ class NewPrivateChatAPIView(APIView):
         chat.user_list.add(User.objects.get(username=request.data['init']))
         chat.user_list.add(User.objects.get(username=request.data['companion']))
         return Response({'id': chat.pk}, status=status.HTTP_201_CREATED)
+
+
+class AddNewUserToChatAPIView(APIView):
+    def patch(self, request, **kwargs):
+        print(request.data)
+        chat = ChatRoom.objects.get(pk=kwargs['chat_id'])
+        new_user = User.objects.get(username=request.data['username'])
+        chat.user_list.add(new_user)
+        return Response(status=status.HTTP_204_NO_CONTENT)

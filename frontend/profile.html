@@ -150,7 +150,14 @@
                     if (res.status === 201) {
                         return res.json();
                     } else {
-                        // error msg
+                        let error = document.getElementById('priv-error-str');
+                        if (error) {
+                            error.innerHTML = 'Internal server error, please try again later';
+                        } else {
+                            error = document.createElement('h4');
+                            error.innerHTML = 'Internal server error, please try again later';
+                            usersBlock.insertAdjacentElement('afterbegin', error);
+                        };
                     };
                 }).then(result => {
                     let newChatURL = `http://127.0.0.1:8000/api/v1/chat/${result.id}`;
@@ -191,11 +198,39 @@
                     newElem.id = 'chat' + chat.id;
                 };
                 let chatName = `<p>${chat.name}<p>`;
-                let button = `<a class="a-chat-${chat.id}" href="http://127.0.0.1:8000/api/v1/chat/${chat.id}"
-                >Join chat</a>`;
+                let button = `<button class="btn-chat-${chat.id}">Join chat</button>`;
                 let activity = `<p>${chat.last_activity}<p>`;
                 newElem.innerHTML = chatName + activity + button;
                 allChatsBlock.insertAdjacentElement('beforeend', newElem);
+                newElem.querySelector('button').addEventListener('click', () => {
+                    let newUserAddURL = `http://127.0.0.1:8000/api/v1/chatroom/new_user/${chat.id}`;
+                    let params = {
+                        username: document.getElementById('prof-name').textContent,
+                    };
+                    let options = {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                            'Content-Type': 'application/json;charset=utf-8',
+                        },
+                        body: JSON.stringify(params),
+                    };
+                    fetch(newUserAddURL, options).then(res => {
+                        if (res.status === 204) {
+                            let link = `http://127.0.0.1:8000/api/v1/chat/${chat.id}`;
+                            let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`;
+                            document.querySelector('head').insertAdjacentHTML('beforeend', redir);
+                        } else {
+                            let errorStr = document.getElementById('error-str');
+                            if (!errorStr) {
+                                errorStr = document.createElement('h4');
+                                errorStr.id = 'error-str';
+                                allChatsBlock.insertAdjacentElement('afterbegin', errorStr);
+                            };
+                            errorStr.innerHTML = "Can't add user to chat, try again later";
+                        };
+                    }).catch(error => console.log(error.message));
+                });
             };
         }).catch(error => console.log(error.message));
 
@@ -204,7 +239,7 @@
             let newElem = document.createElement('div');
             newElem.id = 'profile' + result.id;
             let username = `<p id="prof-name">${result.username}<p>`;
-            let button = `<button class="btn-edit-${result.id}">Edit profile</button>`;
+            let button = `<button class="btn-edit-prof">Edit profile</button>`;
             let picture;
             if (result.picture) {
                 picture = `<p><img src="${result.picture}" alt="${result.username}"</p>`;
@@ -214,6 +249,15 @@
             };
             newElem.innerHTML = picture + username + button;
             personalBlock.insertAdjacentElement('beforeend', newElem);
+            // let picBtn = newElem.querySelector('.btn-edit-prof');
+            // let usernameElem = newElem.getElementById('prof-name');
+            // picBtn.addEventListener('click', () => {
+            //     picBtn.style.display = 'none';
+            //     let form = document.createElement('form');
+            //     let inner = `<p><input type="file"></p><p><input type="submit"></p>`;
+            //     form.innerHTML = inner;
+            //     usernameElem.insertAdjacentElement('afterend', form);
+            // });
             let userNoteToHide = document.querySelector(`#user${result.id}`);
             if (userNoteToHide){
                 userNoteToHide.style.display = 'none';
@@ -225,8 +269,7 @@
                         let newElem = document.createElement('div');
                         newElem.id = 'profile-chat' + chat.id;
                         let chatName = `<p>${chat.name}<p>`;
-                        let button = `<a class="a-pers-chat-${chat.id}" href="http://127.0.0.1:8000/api/v1/chat/${chat.id}"
-                        >Continue chatting</a>`;
+                        let button = `<button class="btn-pers-chat-${chat.id}">Continue chatting</button>`;
                         let activity = `<p>${chat.last_activity}<p>`;
                         newElem.innerHTML = chatName + activity + button;
                         userChatsBlock.insertAdjacentElement('beforeend', newElem);
@@ -234,12 +277,15 @@
                         if (chatNoteToHide){
                             chatNoteToHide.style.display = 'none';
                         };
+                        newElem.querySelector('button').addEventListener('click', () => {
+                            let link = `http://127.0.0.1:8000/api/v1/chat/${chat.id}`;
+                            let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`
+                            document.querySelector('head').insertAdjacentHTML('beforeend', redir);
+                        });
                     };
                 };
             }).catch(error => console.log(error.message));
         }).catch(error => console.log(error.message));
-
-
         newChatBtn.addEventListener('click', newChat);
     </script>
 </body>
