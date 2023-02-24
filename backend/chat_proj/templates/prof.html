@@ -182,6 +182,9 @@
                     picture = `<p><img src="${url}" alt="${user.username}"</p>`;
                 };
                 newElem.innerHTML = picture + username + button;
+                if (document.getElementById(`profile${user.id}`)) {
+                    newElem.style.display = 'none';
+                };
                 usersBlock.insertAdjacentElement('beforeend', newElem);
                 newElem.querySelector('button').addEventListener('click', startPrivateChat);
             };
@@ -240,28 +243,70 @@
             newElem.id = 'profile' + result.id;
             let username = `<p id="prof-name">${result.username}<p>`;
             let button = `<button class="btn-edit-prof">Edit profile</button>`;
+            let adder = `<div id='pic-adder-form'>
+            <p><input type="file" accept="image/*" id='pic-upload-field'></p>
+            <p><button id='pic-uploader'>Change picture</button></p></div>`;
             let picture;
             if (result.picture) {
-                picture = `<p><img src="${result.picture}" alt="${result.username}"</p>`;
+                picture = `<p id="prof-img-container"><img src="${result.picture}" alt="${result.username}"></p>`;
             } else {
                 let url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
-                picture = `<p><img src="${url}" alt="${result.username}"</p>`;
+                picture = `<p id="prof-img-container"><img src="${url}" alt="${result.username}"></p>`;
             };
-            newElem.innerHTML = picture + username + button;
+            newElem.innerHTML = picture + username + button + adder;
             personalBlock.insertAdjacentElement('beforeend', newElem);
-            // let picBtn = newElem.querySelector('.btn-edit-prof');
-            // let usernameElem = newElem.getElementById('prof-name');
-            // picBtn.addEventListener('click', () => {
-            //     picBtn.style.display = 'none';
-            //     let form = document.createElement('form');
-            //     let inner = `<p><input type="file"></p><p><input type="submit"></p>`;
-            //     form.innerHTML = inner;
-            //     usernameElem.insertAdjacentElement('afterend', form);
-            // });
             let userNoteToHide = document.querySelector(`#user${result.id}`);
             if (userNoteToHide){
                 userNoteToHide.style.display = 'none';
             };
+            let picBtn = newElem.querySelector('.btn-edit-prof');
+            let adderBlock = document.getElementById('pic-adder-form');
+            adderBlock.style.display = 'none';
+            picBtn.addEventListener('click', () => {
+                picBtn.style.display = 'none';
+                adderBlock.style.display = 'initial';
+            });
+            document.getElementById('pic-uploader').addEventListener('click', () => {
+                let file = document.getElementById('pic-upload-field').files[0];
+                if (file) {
+                    let formData = new FormData();
+                    formData.append('file', file);
+                    let options = {
+                        method: 'POST',
+                        body: formData,
+                    };
+                    let URL = `http://127.0.0.1:8000/api/v1/profile_picture/${result.id}`;
+                    fetch(URL, options).then(res => {
+                        if (res.status === 200){
+                            picBtn.style.display = 'initial';
+                            adderBlock.style.display = 'none';
+                            return res.json();
+                        } else {
+                            if (!document.getElementById('pic-upload-error')) {
+                                let error = document.createElement('h4');
+                                error.id = 'pic-upload-error';
+                                error.innerHTML = 'Internal server error, please try again later';
+                                newElem.insertAdjacentElement('afterbegin', error);
+                            } else {
+                                error.innerHTML = 'Internal server error, please try again later';
+                            };
+                        };
+                    }).then(result => {
+                        let container = document.getElementById('prof-img-container');
+                        let username = document.getElementById('prof-name');
+                        container.innerHTML = `<img src="${result.img}" alt="${username}">`;
+                    }).catch(error => console.log(error.message));
+                } else {
+                    if (!document.getElementById('pic-upload-error')) {
+                        let error = document.createElement('h4');
+                        error.id = 'pic-upload-error';
+                        error.innerHTML = 'Upload file to change your profile picture';
+                        newElem.insertAdjacentElement('afterbegin', error);
+                    } else {
+                        error.innerHTML = 'Upload file to change your profile picture';
+                    };
+                };
+            });
             const userChatsURL = `http://127.0.0.1:8000/api/v1/user_chats/${result.id}`;
             fetch(userChatsURL).then(res => res.json()).then(result => {
                 for (let chat of result.chats) {

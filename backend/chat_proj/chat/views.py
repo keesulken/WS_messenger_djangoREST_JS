@@ -117,8 +117,17 @@ class NewPrivateChatAPIView(APIView):
 
 class AddNewUserToChatAPIView(APIView):
     def patch(self, request, **kwargs):
-        print(request.data)
         chat = ChatRoom.objects.get(pk=kwargs['chat_id'])
         new_user = User.objects.get(username=request.data['username'])
         chat.user_list.add(new_user)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class AddUserPictureAPIView(APIView):
+    def post(self, request, **kwargs):
+        user = User.objects.get(pk=kwargs['user_id'])
+        user.picture = request.data['file']
+        user.save()
+        pic = UserSerializer(user).data['picture']
+        return Response({'img': pic}, status=status.HTTP_200_OK)
+
