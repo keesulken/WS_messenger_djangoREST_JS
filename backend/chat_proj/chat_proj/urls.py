@@ -46,6 +46,7 @@ urlpatterns = [
     path('api/v1/chatroom/new_private/', NewPrivateChatAPIView.as_view()),
     path('api/v1/chatroom/new_user/<int:chat_id>', AddNewUserToChatAPIView.as_view()),
     path('api/v1/profile_picture/<int:user_id>', AddUserPictureAPIView.as_view()),
+    path('api/v1/profile_name/<int:user_id>', UserChangeNameAPIView.as_view()),
 
 
     path('register/', RegisterView.as_view(template_name='signup.html')),

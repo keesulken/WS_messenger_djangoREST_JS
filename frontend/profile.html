@@ -133,7 +133,6 @@
                 document.querySelector('head').insertAdjacentHTML('beforeend', redir);
             } else {
                 let params = {
-                    name: profName + 'to' + companion,
                     init: profName,
                     companion: companion,
                 };
@@ -244,6 +243,8 @@
             let username = `<p id="prof-name">${result.username}<p>`;
             let button = `<button class="btn-edit-prof">Edit profile</button>`;
             let adder = `<div id='pic-adder-form'>
+            <p><input type="text" id="change-name-field"></p>
+            <p><button id='name-changer'>Change username</button></p>
             <p><input type="file" accept="image/*" id='pic-upload-field'></p>
             <p><button id='pic-uploader'>Change picture</button></p></div>`;
             let picture;
@@ -265,6 +266,66 @@
             picBtn.addEventListener('click', () => {
                 picBtn.style.display = 'none';
                 adderBlock.style.display = 'initial';
+                document.getElementById('change-name-field').value = result.username;
+            });
+            document.getElementById('name-changer').addEventListener('click', () => {
+                let name = document.getElementById('change-name-field').value;
+                let template = /^\D[a-zA-z]+$/;
+                console.log(name);
+                if ((name === '') || (name === result.username)) {
+                    picBtn.style.display = 'initial';
+                    adderBlock.style.display = 'none';
+                } else if (name.length < 4) {
+                    if (!document.getElementById('pic-upload-error')) {
+                        let error = document.createElement('h4');
+                        error.id = 'pic-upload-error';
+                        error.innerHTML = 'Useranme should be at least 4 symbols long';
+                        newElem.insertAdjacentElement('afterbegin', error);
+                    } else {
+                        let error = document.getElementById('pic-upload-error');
+                        error.innerHTML = 'Useranme should be at least 4 symbols long';
+                    };
+                } else if (!template.test(name)) {
+                    if (!document.getElementById('pic-upload-error')) {
+                        let error = document.createElement('h4');
+                        error.id = 'pic-upload-error';
+                        error.innerHTML = 'Username should consist of letters/digits and start with a letter';
+                        newElem.insertAdjacentElement('afterbegin', error);
+                    } else {
+                        let error = document.getElementById('pic-upload-error');
+                        error.innerHTML = 'Username should consist of letters/digits and start with a letter';
+                    };
+                } else {
+                    let url = `http://127.0.0.1:8000/api/v1/profile_name/${result.id}`;
+                    let params = {name: name};
+                    let options = {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Token ${token}`,
+                            'Content-Type': 'application/json;charset=utf-8',
+                        },
+                        body: JSON.stringify(params),
+                    };
+                    fetch(url, options).then(res => {
+                        if (res.status === 200){
+                            picBtn.style.display = 'initial';
+                            adderBlock.style.display = 'none';
+                            return res.json();
+                        } else {
+                            if (!document.getElementById('pic-upload-error')) {
+                                let error = document.createElement('h4');
+                                error.id = 'pic-upload-error';
+                                error.innerHTML = 'Internal server error, please try again later';
+                                newElem.insertAdjacentElement('afterbegin', error);
+                            } else {
+                                let error = document.getElementById('pic-upload-error');
+                                error.innerHTML = 'Internal server error, please try again later';
+                            };
+                        };
+                    }).then(result => {
+                        document.getElementById('prof-name').textContent = result.username;
+                    }).catch(error => console.log(error.message));
+                };
             });
             document.getElementById('pic-uploader').addEventListener('click', () => {
                 let file = document.getElementById('pic-upload-field').files[0];
@@ -288,6 +349,7 @@
                                 error.innerHTML = 'Internal server error, please try again later';
                                 newElem.insertAdjacentElement('afterbegin', error);
                             } else {
+                                let error = document.getElementById('pic-upload-error');
                                 error.innerHTML = 'Internal server error, please try again later';
                             };
                         };
@@ -303,6 +365,7 @@
                         error.innerHTML = 'Upload file to change your profile picture';
                         newElem.insertAdjacentElement('afterbegin', error);
                     } else {
+                        let error = document.getElementById('pic-upload-error');
                         error.innerHTML = 'Upload file to change your profile picture';
                     };
                 };

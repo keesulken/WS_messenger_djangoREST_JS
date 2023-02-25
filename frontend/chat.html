@@ -6,6 +6,22 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="">
+        <style>
+            body {
+                display: flex;
+                flex-flow: row nowrap;
+            }
+    
+            img {
+                height: 30px;
+                width: 30px;
+            }
+    
+            .members div {
+                display: flex;
+                flex-flow: row nowrap;
+            }
+            </style>
     </head>
     <body>
         <div class="members">
@@ -24,20 +40,40 @@
             <h3 class="chat-desc">chat description</h3>
             <h4 class="chat-admin">admin: admin</h4>
         </div>
+        <div class="auth-user-info">
+        </div>
         <script>
+            const token = localStorage.getItem('token');
+            const unauthURL = 'http://127.0.0.1:8000/login';
+            const unauthRedir = `<meta http-equiv='refresh' content='0; URL=${unauthURL}'>`;
+            if (!token) {
+                document.querySelector('head').insertAdjacentHTML('beforeend', unauthRedir);
+            };
             const chatName = document.querySelector('.chat-name');
             const chatDesc = document.querySelector('.chat-desc');
             const chatAdmin = document.querySelector('.chat-admin');
             const members = document.querySelector('.members');
             const field = document.querySelector('.chat-field');
+            const logged = document.querySelector('.auth-user-info');
             const url = window.location.href;
             const path = 'account/chat/';
             const index = url.slice((url.lastIndexOf(path))+path.length);
             const chatURL = `http://127.0.0.1:8000/api/v1/chatroom/${index}`;
+            const profileURL = 'http://127.0.0.1:8000/api/v1/auth/users/me/';
+            const options = {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Token ${token}`,
+                },
+            };
             fetch(chatURL).then(res => res.json()).then(result => {
                 chatName.innerHTML = result.chat.name;
                 chatDesc.innerHTML = result.chat.description;
-                chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
+                if (result.chat.private) {
+                    chatAdmin.style.display = 'none';
+                } else {
+                    chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
+                };
                 for (let user of result.users) {
                     let newElem = document.createElement('div');
                     newElem.id = 'user' + user.id;
@@ -67,6 +103,22 @@
                     field.insertAdjacentElement('beforeend', newElem)
                 }
             }).catch(error => console.log(error.message));
+
+
+            fetch(profileURL, options).then(res => res.json()).then(result => {
+                let name = `<p id="auth-name">${result.username}</p>`;
+                let picture = result.picture;
+                if (picture) {
+                        picture = `<p><img src="${result.picture}" alt=${result.username}></p>`;
+                    } else {
+                        let url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
+                        picture = `<p><img src="${url}" alt=${result.username}></p>`;
+                    };
+                logged.insertAdjacentHTML('afterbegin', picture);
+                logged.insertAdjacentHTML('afterbegin', name);
+            });
+
+
             async function getData() {
                 let response = fetch(chatURL);
                 let result = await response.then(res => res.json());
@@ -137,9 +189,7 @@
                             'Content-Type': 'application/json;charset=utf-8'
                         },
                         body: JSON.stringify({
-                            author: result.current.id,
-                            chat: result.chat.id,
-                            content: text,
+                            text: text,
                         })
                     });
                     ws.send(JSON.stringify({content:{

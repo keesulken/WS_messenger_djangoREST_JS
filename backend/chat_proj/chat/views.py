@@ -34,18 +34,15 @@ class MessageViewSet(viewsets.ModelViewSet):
 
 class ChatDetailAPIView(APIView):
     def get(self, request, **kwargs):
-        authenticated_user = request.user
         chat = ChatRoom.objects.get(pk=kwargs['pk'])
         admin = User.objects.get(pk=chat.admin_id)
         user_list = chat.user_list.all()
         msg_list = Message.objects.filter(chat=chat)
-        current_user = AuthorizedUserSerializer(authenticated_user).data
         chat_data = SingleChatSerializer(chat).data
         admin_data = UserSerializer(admin).data
         msg_list_data = MessageSerializer(msg_list, many=True).data
         user_list_data = UserSerializer(user_list, many=True).data
-        return Response({'current': current_user,
-                         'chat': chat_data,
+        return Response({'chat': chat_data,
                          'admin': admin_data,
                          'users': user_list_data,
                          'messages': msg_list_data})
@@ -106,12 +103,14 @@ class NewChatAPIView(APIView):
 class NewPrivateChatAPIView(APIView):
     def post(self, request, **kwargs):
         chat = ChatRoom()
-        chat.name = request.data['name']
+        companion1 = User.objects.get(username=request.data['init'])
+        companion2 = User.objects.get(username=request.data['companion'])
+        chat.name = f'{companion1.pk}to{companion2.pk}'
         chat.admin_id = 0
         chat.private = True
         chat.save()
-        chat.user_list.add(User.objects.get(username=request.data['init']))
-        chat.user_list.add(User.objects.get(username=request.data['companion']))
+        chat.user_list.add(companion1)
+        chat.user_list.add(companion2)
         return Response({'id': chat.pk}, status=status.HTTP_201_CREATED)
 
 
@@ -130,4 +129,12 @@ class AddUserPictureAPIView(APIView):
         user.save()
         pic = UserSerializer(user).data['picture']
         return Response({'img': pic}, status=status.HTTP_200_OK)
+
+
+class UserChangeNameAPIView(APIView):
+    def post(self, request, **kwargs):
+        user = User.objects.get(pk=kwargs['user_id'])
+        user.username = request.data['name']
+        user.save()
+        return Response({'username': user.username}, status=status.HTTP_200_OK)
 
