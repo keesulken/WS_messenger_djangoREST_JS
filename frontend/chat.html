@@ -74,12 +74,13 @@
                 let authResponse = fetch(profileURL, options);
                 let authUser = await authResponse.then(res => res.json());
                 let newMsgURL = `http://127.0.0.1:8000/api/v1/chatroom/new_msg/${result.chat.id}`;
-                chatName.innerHTML = result.chat.name;
-                chatDesc.innerHTML = result.chat.description;
                 if (result.chat.private) {
-                    chatAdmin.style.display = 'none';
+                    chatAdmin.remove();
+                    chatDesc.remove();
                 } else {
                     chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
+                    chatName.innerHTML = result.chat.name;
+                    chatDesc.innerHTML = result.chat.description;
                 };
 
 
@@ -95,6 +96,13 @@
                         picture = `<p><img src="${url}" alt=${user.username}></p>`;
                     };
                     newElem.innerHTML = picture + username;
+                    if (result.chat.private) {
+                        if (user.username === authUser.username) {
+                            newElem.style.display = 'none';
+                        } else {
+                            chatName.innerHTML = `Your dialogue with ${user.username}`;
+                        };
+                    };
                     members.insertAdjacentElement('beforeend', newElem);
                 };
 

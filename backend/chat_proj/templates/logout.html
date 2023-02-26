@@ -4,10 +4,56 @@
         <meta charset="utf-8">
         <title>Logout page</title>
         <link rel="stylesheet" href="">
+        <link rel="icon" href="https://i.ibb.co/93N0fyc/favicon-32x32.png" type="image/x-icon">
+        <style>
+            body {
+                height: 100%;
+                margin: 0;
+                display: flex;
+                flex-flow: column nowrap;
+                justify-content: space-between;
+                align-content: stretch;
+            }
+
+            .header {
+                background-color: #A60400;
+                margin: 0;
+                height: 20vh;
+            }
+
+            .footer {
+                background-color: #A60400;
+                margin: 0;
+                height: 10vh;
+            }
+
+            .root {
+                height: 55vh;
+                display: flex;
+                flex-flow: column nowrap;
+                align-items: center;
+                align-content: center;
+                justify-content: center;
+                margin-bottom: 15vh;
+            }
+
+            img {
+                height: 15vh;
+                width: 20vh;
+                margin-top: 2.5vh;
+                margin-left: 5vw;
+            }
+        </style>
     </head>
     <body>
-        <h2 id="main-str">You sure you want to logout?</h2>
-        <button id="main-btn">Logout</button>
+        <div class="header">
+            <img src="https://i.ibb.co/KKbb1GP/OWLANCHE-free-file.png" alt="logo">
+        </div>
+        <div class="root">
+            <h2 id="main-str">You sure you want to logout?</h2>
+            <button id="main-btn">Logout</button>
+        </div>
+        <div class="footer"></div>
         <script>
             const btn = document.getElementById('main-btn');
             const str = document.getElementById('main-str');
