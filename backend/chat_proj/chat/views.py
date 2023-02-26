@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from django.views.generic import CreateView
 from rest_framework import generics, viewsets, status
 from rest_framework.response import Response
@@ -35,17 +36,27 @@ class MessageViewSet(viewsets.ModelViewSet):
 class ChatDetailAPIView(APIView):
     def get(self, request, **kwargs):
         chat = ChatRoom.objects.get(pk=kwargs['pk'])
-        admin = User.objects.get(pk=chat.admin_id)
-        user_list = chat.user_list.all()
-        msg_list = Message.objects.filter(chat=chat)
-        chat_data = SingleChatSerializer(chat).data
-        admin_data = UserSerializer(admin).data
-        msg_list_data = MessageSerializer(msg_list, many=True).data
-        user_list_data = UserSerializer(user_list, many=True).data
-        return Response({'chat': chat_data,
-                         'admin': admin_data,
-                         'users': user_list_data,
-                         'messages': msg_list_data})
+        if chat.private:
+            user_list = chat.user_list.all()
+            msg_list = Message.objects.filter(chat=chat)
+            chat_data = SingleChatSerializer(chat).data
+            msg_list_data = MessageSerializer(msg_list, many=True).data
+            user_list_data = UserSerializer(user_list, many=True).data
+            return Response({'chat': chat_data,
+                             'users': user_list_data,
+                             'messages': msg_list_data})
+        else:
+            admin = User.objects.get(pk=chat.admin_id)
+            user_list = chat.user_list.all()
+            msg_list = Message.objects.filter(chat=chat)
+            chat_data = SingleChatSerializer(chat).data
+            admin_data = UserSerializer(admin).data
+            msg_list_data = MessageSerializer(msg_list, many=True).data
+            user_list_data = UserSerializer(user_list, many=True).data
+            return Response({'chat': chat_data,
+                             'admin': admin_data,
+                             'users': user_list_data,
+                             'messages': msg_list_data})
 
 
 class ProfileAPIView(APIView):
@@ -67,12 +78,12 @@ class ProfileAPIView(APIView):
                              'chat_list': chat_list})
 
 
-class MessageAPIView(APIView):
+class NewMessageAPIView(APIView):
     def post(self, request, **kwargs):
         msg = Message()
-        msg.author = request.data['author']
+        msg.author = User.objects.get(username=request.data['user'])
+        msg.chat = ChatRoom.objects.get(pk=kwargs['chat_id'])
         msg.content = request.data['text']
-        msg.chat = request.data['chat']
         msg.save()
         return Response(status=status.HTTP_201_CREATED)
 
@@ -134,7 +145,9 @@ class AddUserPictureAPIView(APIView):
 class UserChangeNameAPIView(APIView):
     def post(self, request, **kwargs):
         user = User.objects.get(pk=kwargs['user_id'])
-        user.username = request.data['name']
-        user.save()
-        return Response({'username': user.username}, status=status.HTTP_200_OK)
-
+        try:
+            user.username = request.data['name']
+            user.save()
+            return Response({'username': user.username}, status=status.HTTP_200_OK)
+        except IntegrityError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)

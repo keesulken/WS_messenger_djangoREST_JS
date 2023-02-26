@@ -25,11 +25,12 @@ class SingleChatSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'admin_id',
                   'name',
-                  'description',)
+                  'description',
+                  'private',)
 
 
 class ChatRoomSerializer(serializers.ModelSerializer):
-    last_activity = serializers.DateTimeField(format="%d-%b-%y %H:%M")
+    last_activity = serializers.DateTimeField(format="%d %b %y, %H:%M")
 
     class Meta:
         model = ChatRoom
@@ -43,7 +44,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    added = serializers.DateTimeField(format="%d-%b-%y %H:%M")
+    added = serializers.DateTimeField(format="%d %b %y, %H:%M")
 
     class Meta:
         model = Message

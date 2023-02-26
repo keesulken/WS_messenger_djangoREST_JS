@@ -256,6 +256,7 @@
             };
             newElem.innerHTML = picture + username + button + adder;
             personalBlock.insertAdjacentElement('beforeend', newElem);
+            let actualName = document.getElementById('prof-name').textContent;
             let userNoteToHide = document.querySelector(`#user${result.id}`);
             if (userNoteToHide){
                 userNoteToHide.style.display = 'none';
@@ -266,15 +267,17 @@
             picBtn.addEventListener('click', () => {
                 picBtn.style.display = 'none';
                 adderBlock.style.display = 'initial';
-                document.getElementById('change-name-field').value = result.username;
+                document.getElementById('change-name-field').value = actualName;
             });
             document.getElementById('name-changer').addEventListener('click', () => {
                 let name = document.getElementById('change-name-field').value;
-                let template = /^\D[a-zA-z]+$/;
-                console.log(name);
-                if ((name === '') || (name === result.username)) {
+                let template = /^\D[a-zA-z\d]+$/g;
+                if ((name === '') || (name === actualName)) {
                     picBtn.style.display = 'initial';
                     adderBlock.style.display = 'none';
+                    if (document.getElementById('pic-upload-error')) {
+                        document.getElementById('pic-upload-error').textContent = '';
+                    };
                 } else if (name.length < 4) {
                     if (!document.getElementById('pic-upload-error')) {
                         let error = document.createElement('h4');
@@ -311,6 +314,16 @@
                             picBtn.style.display = 'initial';
                             adderBlock.style.display = 'none';
                             return res.json();
+                        } else if (res.status === 400) {
+                            if (!document.getElementById('pic-upload-error')) {
+                                let error = document.createElement('h4');
+                                error.id = 'pic-upload-error';
+                                error.innerHTML = 'This username is already taken';
+                                newElem.insertAdjacentElement('afterbegin', error);
+                            } else {
+                                let error = document.getElementById('pic-upload-error');
+                                error.innerHTML = 'This username is already taken';
+                            };
                         } else {
                             if (!document.getElementById('pic-upload-error')) {
                                 let error = document.createElement('h4');
@@ -324,6 +337,10 @@
                         };
                     }).then(result => {
                         document.getElementById('prof-name').textContent = result.username;
+                        document.getElementById('change-name-field').value = '';
+                        if (document.getElementById('pic-upload-error')) {
+                            document.getElementById('pic-upload-error').textContent = '';
+                        };
                     }).catch(error => console.log(error.message));
                 };
             });
@@ -357,6 +374,9 @@
                         let container = document.getElementById('prof-img-container');
                         let username = document.getElementById('prof-name');
                         container.innerHTML = `<img src="${result.img}" alt="${username}">`;
+                        if (document.getElementById('pic-upload-error')) {
+                            document.getElementById('pic-upload-error').textContent = '';
+                        };
                     }).catch(error => console.log(error.message));
                 } else {
                     if (!document.getElementById('pic-upload-error')) {

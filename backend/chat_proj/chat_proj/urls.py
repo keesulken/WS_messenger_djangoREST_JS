@@ -40,8 +40,7 @@ urlpatterns = [
 
     path('api/v1/chatroom/<int:pk>', ChatDetailAPIView.as_view()),
     path('api/v1/user_chats/<int:user_id>', UserChatAPIView.as_view()),
-    # path('api/v1/chatroom/<int:chat_id>/new_msg', MessageAPIView.as_view()),
-    path('api/v1/chatroom/new_msg', MessageAPIView.as_view()),
+    path('api/v1/chatroom/new_msg/<int:chat_id>', NewMessageAPIView.as_view()),
     path('api/v1/chatroom/new/', NewChatAPIView.as_view()),
     path('api/v1/chatroom/new_private/', NewPrivateChatAPIView.as_view()),
     path('api/v1/chatroom/new_user/<int:chat_id>', AddNewUserToChatAPIView.as_view()),

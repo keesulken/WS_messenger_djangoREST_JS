@@ -66,7 +66,14 @@
                     'Authorization': `Token ${token}`,
                 },
             };
-            fetch(chatURL).then(res => res.json()).then(result => {
+
+
+            async function getData() {
+                let response = fetch(chatURL);
+                let result = await response.then(res => res.json());
+                let authResponse = fetch(profileURL, options);
+                let authUser = await authResponse.then(res => res.json());
+                let newMsgURL = `http://127.0.0.1:8000/api/v1/chatroom/new_msg/${result.chat.id}`;
                 chatName.innerHTML = result.chat.name;
                 chatDesc.innerHTML = result.chat.description;
                 if (result.chat.private) {
@@ -74,6 +81,8 @@
                 } else {
                     chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
                 };
+
+
                 for (let user of result.users) {
                     let newElem = document.createElement('div');
                     newElem.id = 'user' + user.id;
@@ -88,6 +97,8 @@
                     newElem.innerHTML = picture + username;
                     members.insertAdjacentElement('beforeend', newElem);
                 };
+
+
                 for (let msg of result.messages) {
                     let newElem = document.createElement('div');
                     newElem.id = 'msg' + msg.id;
@@ -101,63 +112,25 @@
                     };
                     newElem.innerHTML = authorName + content + added;
                     field.insertAdjacentElement('beforeend', newElem)
-                }
-            }).catch(error => console.log(error.message));
+                };
 
 
-            fetch(profileURL, options).then(res => res.json()).then(result => {
-                let name = `<p id="auth-name">${result.username}</p>`;
-                let picture = result.picture;
+                let name = `<p id="auth-name">${authUser.username}</p>`;
+                let picture = authUser.picture;
                 if (picture) {
-                        picture = `<p><img src="${result.picture}" alt=${result.username}></p>`;
+                        picture = `<p><img src="${authUser.picture}" alt=${authUser.username}></p>`;
                     } else {
                         let url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
-                        picture = `<p><img src="${url}" alt=${result.username}></p>`;
+                        picture = `<p><img src="${url}" alt=${authUser.username}></p>`;
                     };
                 logged.insertAdjacentHTML('afterbegin', picture);
                 logged.insertAdjacentHTML('afterbegin', name);
-            });
 
 
-            async function getData() {
-                let response = fetch(chatURL);
-                let result = await response.then(res => res.json());
-                chatName.innerHTML = result.chat.name;
-                chatDesc.innerHTML = result.chat.description;
-                chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
-                for (let user of result.users) {
-                    let newElem = document.createElement('div');
-                    newElem.id = 'user' + user.id;
-                    let username = `<p id="username${user.id}">${user.username}</p>`;
-                    let picture;
-                    if (user.picture) {
-                        picture = `<p><img src="${user.picture}" alt=${user.username}></p>`;
-                    } else {
-                        let url = 'https://upload.wikimedia.org/wikipedia/commons/a/ac/Default_pfp.jpg';
-                        picture = `<p><img src="${url}" alt=${user.username}></p>`;
-                    };
-                    newElem.innerHTML = picture + username;
-                    members.insertAdjacentElement('beforeend', newElem);
-                };
-                for (let msg of result.messages) {
-                    let newElem = document.createElement('div');
-                    newElem.id = 'msg' + msg.id;
-                    let content = `<p>${msg.content}</p>`;
-                    let added = `<p>${msg.added}</p>`;
-                    let authorName = document.getElementById(`username${msg.author}`);
-                    if (authorName){
-                        authorName = `<p>${authorName.textContent}</p>`;
-                    } else {
-                        authorName = '<p>Ex-member</p>';
-                    };
-                    newElem.innerHTML = authorName + content + added;
-                    field.insertAdjacentElement('beforeend', newElem)
-                };
                 const ws = new WebSocket('ws://127.0.0.1:5000');
                 ws.onopen = () => {
-                    console.log('connected');
                     ws.send(JSON.stringify({notification:{
-                        user: result.current.username,
+                        user: authUser.username,
                         status: 'joined',
                     }}));
                 };
@@ -167,15 +140,24 @@
                         let {name, status} = msg.notification;
                         let newElem = document.createElement('div');
                         newElem.className = 'chat-notification';
-                        newElem.innerHTML = `User ${user} ${status} the chat`;
+                        newElem.innerHTML = `User ${name} ${status} the chat`;
                         field.insertAdjacentElement('beforeend', newElem);
                     } else {
                         let {name, text} = msg.content;
+                        let date = new Date();
+                        let monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug',
+                        'Sept', 'Oct', 'Now', 'Dec'];
+                        let day = String(date.getDate()).length > 1 ? date.getDate() : `0${date.getDate()}`;
+                        let month = monthNames[date.getMonth()];
+                        let year = String(date.getFullYear()).slice(2);
+                        let hour = String(date.getHours()).length > 1 ? date.getHours() : `0${date.getHours()}`;
+                        let min = date.getMinutes();
+                        let dateStr = `${day} ${month} ${year}, ${hour}:${min}`;
                         let newElem = document.createElement('div');
                         newElem.className = 'chat-msg';
-                        let author = `<p>${user}</p>`;
+                        let author = `<p>${name}</p>`;
                         let content = `<p>${text}</p>`;
-                        let added = `<p>${new Date().toLocaleString()}</p>`;
+                        let added = `<p>${dateStr}</p>`;
                         newElem.innerHTML = author + content + added;
                         field.insertAdjacentElement('beforeend', newElem);
                     };
@@ -183,23 +165,34 @@
                 function send (event) {
                     event.preventDefault();
                     let text = document.getElementById('form-text').value;
-                    fetch(msgurl, {
+                    fetch(newMsgURL, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json;charset=utf-8'
                         },
                         body: JSON.stringify({
+                            user: authUser.username,
                             text: text,
                         })
+                    }).then(res => {
+                        if (res.status !== 201) {
+                            let field = document.querySelector('.main-field');
+                            let error = document.createElement('h4');
+                            error.id = 'msg-error-str';
+                            error.innerHTML = 'Internal server error, please try again later';
+                        } else {
+                            document.getElementById('form-text').value = '';
+                        };
                     });
                     ws.send(JSON.stringify({content:{
-                        user: result.current.username,
+                        user: authUser.username,
                         text: text,
-                    }}))
+                    }}));
                 };
                 let form = document.getElementById('chat-form');
                 form.addEventListener('submit', send);
             };
+            getData();
         </script>
     </body>
 </html>
