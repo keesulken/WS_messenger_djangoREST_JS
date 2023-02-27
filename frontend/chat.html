@@ -7,40 +7,95 @@
         <link rel="icon" href="https://i.ibb.co/93N0fyc/favicon-32x32.png" type="image/x-icon">
         <style>
             body {
+                height: 100%;
+                margin: 0;
+                display: flex;
+                flex-flow: column nowrap;
+                justify-content: space-between;
+                align-content: stretch;
+            }
+
+            .header {
+                background-color: #A60400;
+                margin: 0;
+                height: 20vh;
                 display: flex;
                 flex-flow: row nowrap;
+                justify-content: space-between;
             }
-    
+
+            .footer {
+                background-color: #A60400;
+                margin: 0; 
+                height: 10vh;
+            }
+
+            .root {
+                min-height: 70vh;
+                display: flex;
+                flex-flow: row nowrap;
+                align-items: flex-start;
+                align-content: center;
+                justify-content: space-evenly;
+            }
+
+            #logo {
+                height: 15vh;
+                width: 20vh;
+                margin-top: 2.5vh;
+                margin-left: 5vw;
+            }
+
             img {
-                height: 30px;
-                width: 30px;
+                height: 50px;
+                width: 50px;
             }
-    
+
             .members div {
                 display: flex;
                 flex-flow: row nowrap;
+                border: 1px solid black;
+                border-radius: 15%;
+                font-size: 20px;
+            }
+
+            .auth-user-info {
+                align-self: center;
+                margin-right: 5vw;
+                font-size: large;
+            }
+
+            .chat-field div {
+                border: 1px solid black;
+                border-radius: 15%;
             }
             </style>
     </head>
     <body>
-        <div class="members">
-        </div>
-        <div class="main-field">
-            <div class="chat-field">
+        <div class="header">
+            <img src="https://i.ibb.co/KKbb1GP/OWLANCHE-free-file.png" alt="logo" id="logo">
+            <div class="auth-user-info">
             </div>
-            <form id="chat-form">
-                <p><input type="text" name="text" id="form-text"></p>
-                <p><input type="submit" value="Send">
-                    <input type="reset" value="Reset"></p>
-            </form>
         </div>
-        <div class="chat-info">
-            <h2 class="chat-name">chat name</h2>
-            <h3 class="chat-desc">chat description</h3>
-            <h4 class="chat-admin">admin: admin</h4>
+        <div class="root">
+            <div class="members">
+            </div>
+            <div class="main-field">
+                <div class="chat-field">
+                </div>
+                <form id="chat-form">
+                    <p><input type="text" name="text" id="form-text"></p>
+                    <p><input type="submit" value="Send">
+                        <input type="reset" value="Reset"></p>
+                </form>
+            </div>
+            <div class="chat-info">
+                <h2 class="chat-name">chat name</h2>
+                <h3 class="chat-desc">chat description</h3>
+                <h4 class="chat-admin">admin: admin</h4>
+            </div>
         </div>
-        <div class="auth-user-info">
-        </div>
+        <div class="footer"></div>
         <script>
             const token = localStorage.getItem('token');
             const unauthURL = 'http://127.0.0.1:8000/login';
@@ -89,9 +144,9 @@
                         let elemChild = document.createElement('div');
                         elemChild.id = 'inner-menu';
                         let settings = '<button id="settings-btn">Chat settings</button>';
-                        let rename = '<button id="rename-btn">Rename chat</button>';
-                        let desc = '<button id="description-btn">Change description</button>';
-                        let del = '<button id="delete-btn">Delete chat</button>';
+                        let rename = '<p><button id="rename-btn">Rename chat</button></p>';
+                        let desc = '<p><button id="description-btn">Change description</button></p>';
+                        let del = '<p><button id="delete-btn">Delete chat</button></p>';
                         elemChild.innerHTML = rename + desc + del;
                         elemChild.style.display = 'none';
                         newElem.insertAdjacentHTML('afterbegin', settings);
@@ -113,9 +168,12 @@
                             input.type = 'text';
                             input.id = 'rename-input';
                             input.value = chatName.textContent;
-                            let inputBlock = `<div id="rename-block"><p>${input}</p>
-                                <p><button id="rename-submit">Submit</button></p></div>`;
-                            newElem.insertAdjacentHTML('afterbegin', inputBlock);
+                            let inputBlock = document.createElement('div');
+                            inputBlock.id = 'rename-block';
+                            inputBlock.innerHTML = `<p id="rename-container"></p>
+                                <p><button id="rename-submit">Submit</button></p>`;
+                            newElem.insertAdjacentElement('afterbegin', inputBlock);
+                            document.getElementById('rename-container').insertAdjacentElement('afterbegin', input);
                             document.getElementById('rename-submit').addEventListener('click', () => {
                                 if (input.value.length < 4) {
                                     let error = document.getElementById('settings-error-str');
@@ -128,7 +186,9 @@
                                             newElem.insertAdjacentElement('afterbegin', error);
                                         };
                                 } else if (input.value === chatName.textContent || input.value === '') {
-                                    document.getElementById('settings-error-str').textContent = '';
+                                    if (document.getElementById('settings-error-str')) {
+                                        document.getElementById('settings-error-str').textContent = '';
+                                    };
                                     document.getElementById('rename-block').remove();
                                     setBtn.style.display = 'initial';
                                 } else {
@@ -158,7 +218,9 @@
                                         };
                                     }).then(result => {
                                         chatName.textContent = result.name;
-                                        document.getElementById('settings-error-str').textContent = '';
+                                        if (document.getElementById('settings-error-str')) {
+                                            document.getElementById('settings-error-str').textContent = '';
+                                        };
                                         document.getElementById('rename-block').remove();
                                         setBtn.style.display = 'initial';
                                     }).catch(error => console.log(error.message));
@@ -173,9 +235,12 @@
                             input.type = 'text';
                             input.id = 'rename-input';
                             input.value = chatDesc.textContent;
-                            let inputBlock = `<div id="desc-block"><p>${input}</p>
-                                <p><button id="desc-submit">Submit</button></p></div>`;
-                            newElem.insertAdjacentHTML('afterbegin', inputBlock);
+                            let inputBlock = document.createElement('div');
+                            inputBlock.id = 'desc-block';
+                            inputBlock.innerHTML = `<p id="desc-container"></p>
+                                <p><button id="desc-submit">Submit</button></p>`;
+                            newElem.insertAdjacentElement('afterbegin', inputBlock);
+                            document.getElementById('desc-container').insertAdjacentElement('afterbegin', input);
                             document.getElementById('desc-submit').addEventListener('click', () => {
                                 if (input.value.length < 4) {
                                     let error = document.getElementById('settings-error-str');
@@ -188,7 +253,9 @@
                                             newElem.insertAdjacentElement('afterbegin', error);
                                         };
                                 } else if (input.value === chatName.textContent || input.value === '') {
-                                    document.getElementById('settings-error-str').textContent = '';
+                                    if (document.getElementById('settings-error-str')) {
+                                        document.getElementById('settings-error-str').textContent = '';
+                                    }
                                     document.getElementById('desc-block').remove();
                                     setBtn.style.display = 'initial';
                                 } else {
@@ -218,8 +285,10 @@
                                         };
                                     }).then(result => {
                                         chatDesc.textContent = result.description;
-                                        document.getElementById('settings-error-str').textContent = '';
-                                        document.getElementById('rename-block').remove();
+                                        if (document.getElementById('settings-error-str')) {
+                                            document.getElementById('settings-error-str').textContent = '';
+                                        };
+                                        document.getElementById('desc-block').remove();
                                         setBtn.style.display = 'initial';
                                     }).catch(error => console.log(error.message));
                                 };
@@ -257,7 +326,9 @@
                                 }).catch(error => console.log(error.message));
                             });
                             document.getElementById('del-return').addEventListener('click', () => {
-                                document.getElementById('settings-error-str').textContent = '';
+                                if (document.getElementById('settings-error-str')) {
+                                    document.getElementById('settings-error-str').textContent = '';
+                                };
                                 document.getElementById('del-block').remove();
                                 setBtn.style.display = 'initial';
                             });
@@ -353,6 +424,10 @@
                 };
 
 
+                let isMember = 'user' + authUser.id;
+                if (!document.getElementById(isMember)) {
+                    document.querySelector('head').insertAdjacentHTML('beforeend', chatDelRedir)
+                };
                 let name = `<p id="auth-name">${authUser.username}</p>`;
                 let picture = authUser.picture;
                 if (picture) {

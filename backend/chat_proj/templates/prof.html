@@ -27,13 +27,12 @@
         }
 
         .root {
-            height: 55vh;
+            min-height: 70vh;
             display: flex;
             flex-flow: row nowrap;
-            align-items: center;
+            align-items: flex-start;
             align-content: center;
-            justify-content: center;
-            margin-bottom: 15vh;
+            justify-content: space-evenly;
         }
 
         #logo {
@@ -51,6 +50,27 @@
         .users div {
             display: flex;
             flex-flow: row nowrap;
+            border: 1px solid black;
+            border-radius: 15%;
+        }
+
+        .user-chats div {
+            border: 1px solid black;
+            border-radius: 15%;
+        }
+
+        .chat-list div {
+            border: 1px solid black;
+            border-radius: 15%;
+        }
+
+        .personal {
+            font-size: 24px;
+        }
+
+        .personal img {
+            height: 60px;
+            width: 60px;
         }
     </style>
 </head>
@@ -150,7 +170,7 @@
                         errorStr.innerHTML = 'Internal server error please try again later';
                     };
                 }).then(result => {
-                    let newChatURL = `http://127.0.0.1:8000/api/v1/chat/${result.id}`;
+                    let newChatURL = `http://127.0.0.1:8000/account/chat/${result.id}`;
                     let redir = `<meta http-equiv='refresh' content='0; URL=${newChatURL}'>`;
                     document.querySelector('head').insertAdjacentHTML('beforeend', redir);
                 }).catch(error => console.log(error.message));
@@ -159,16 +179,18 @@
 
 
         function startPrivateChat () {
-            let profName = document.getElementById('prof-name').textContent;
+            let profName = document.getElementById('prof-name').className;
             let companion = event.target.className;
             let mainMatch = document.getElementById(`priv-chat-${profName}to${companion}`);
             let reverseMatch = document.getElementById(`priv-chat-${companion}to${profName}`);
             if (mainMatch) {
-                let link = mainMatch.querySelector('a').href;
+                let index = mainMatch.querySelector('.priv-id').textContent;
+                let link = `http://127.0.0.1:8000/account/chat/${index}`;
                 let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`;
                 document.querySelector('head').insertAdjacentHTML('beforeend', redir);
             } else if (reverseMatch) {
-                let link = reverseMatch.querySelector('a').href;
+                let index = reverseMatch.querySelector('.priv-id').textContent;
+                let link = `http://127.0.0.1:8000/account/chat/${index}`;
                 let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`;
                 document.querySelector('head').insertAdjacentHTML('beforeend', redir);
             } else {
@@ -199,7 +221,7 @@
                         };
                     };
                 }).then(result => {
-                    let newChatURL = `http://127.0.0.1:8000/api/v1/chat/${result.id}`;
+                    let newChatURL = `http://127.0.0.1:8000/account/chat/${result.id}`;
                     let redir = `<meta http-equiv='refresh' content='0; URL=${newChatURL}'>`;
                     document.querySelector('head').insertAdjacentHTML('beforeend', redir);
                 }).catch(error => console.log(error.message));
@@ -212,7 +234,7 @@
                 let newElem = document.createElement('div');
                 newElem.id = 'user' + user.id;
                 let username = `<p>${user.username}<p>`;
-                let button = `<button class="${user.username}">Start chatting</button>`;
+                let button = `<button class="${user.id}">Start chatting</button>`;
                 let picture;
                 if (user.picture) {
                     picture = `<p><img src="${user.picture}" alt="${user.username}"</p>`;
@@ -233,13 +255,15 @@
         fetch(allChatsURL).then(res => res.json()).then(result => {
             for (let chat of result) {
                 let newElem = document.createElement('div');
+                let chatName;
                 if (chat.private) {
                     newElem.style.display = 'none';
                     newElem.id = 'priv-chat-' + chat.name;
+                    chatName = `<p class="priv-id">${chat.id}<p>`;
                 } else {
                     newElem.id = 'chat' + chat.id;
+                    chatName = `<p>${chat.name}<p>`;
                 };
-                let chatName = `<p>${chat.name}<p>`;
                 let button = `<button class="btn-chat-${chat.id}">Join chat</button>`;
                 let activity = `<p>${chat.last_activity}<p>`;
                 newElem.innerHTML = chatName + activity + button;
@@ -259,7 +283,7 @@
                     };
                     fetch(newUserAddURL, options).then(res => {
                         if (res.status === 204) {
-                            let link = `http://127.0.0.1:8000/api/v1/chat/${chat.id}`;
+                            let link = `http://127.0.0.1:8000/account/chat/${chat.id}`;
                             let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`;
                             document.querySelector('head').insertAdjacentHTML('beforeend', redir);
                         } else {
@@ -280,7 +304,7 @@
         fetch(profileURL, options).then(res => res.json()).then(result => {
             let newElem = document.createElement('div');
             newElem.id = 'profile' + result.id;
-            let username = `<p id="prof-name">${result.username}<p>`;
+            let username = `<p id="prof-name" class="${result.id}">${result.username}<p>`;
             let button = `<button class="btn-edit-prof">Edit profile</button>`;
             let adder = `<div id='pic-adder-form'>
             <p><input type="text" id="change-name-field"></p>
@@ -446,7 +470,7 @@
                             chatNoteToHide.style.display = 'none';
                         };
                         newElem.querySelector('button').addEventListener('click', () => {
-                            let link = `http://127.0.0.1:8000/api/v1/chat/${chat.id}`;
+                            let link = `http://127.0.0.1:8000/account/chat/${chat.id}`;
                             let redir = `<meta http-equiv='refresh' content='0; URL=${link}'>`
                             document.querySelector('head').insertAdjacentHTML('beforeend', redir);
                         });
