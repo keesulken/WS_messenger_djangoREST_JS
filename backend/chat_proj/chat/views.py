@@ -151,3 +151,12 @@ class UserChangeNameAPIView(APIView):
             return Response({'username': user.username}, status=status.HTTP_200_OK)
         except IntegrityError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class LeaveChatAPIView(APIView):
+    def patch(self, request, **kwargs):
+        user = User.objects.get(username=request.data['user'])
+        chat = ChatRoom.objects.get(pk=kwargs['chat_id'])
+        chat.user_list.remove(user)
+        chat.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -3,9 +3,8 @@
     <head>
         <meta charset="utf-8">
         <title>chat</title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="">
+        <link rel="icon" href="https://i.ibb.co/93N0fyc/favicon-32x32.png" type="image/x-icon">
         <style>
             body {
                 display: flex;
@@ -52,6 +51,7 @@
             const chatName = document.querySelector('.chat-name');
             const chatDesc = document.querySelector('.chat-desc');
             const chatAdmin = document.querySelector('.chat-admin');
+            const chatInfo = document.querySelector('.chat-info');
             const members = document.querySelector('.members');
             const field = document.querySelector('.chat-field');
             const logged = document.querySelector('.auth-user-info');
@@ -60,6 +60,8 @@
             const index = url.slice((url.lastIndexOf(path))+path.length);
             const chatURL = `http://127.0.0.1:8000/api/v1/chatroom/${index}`;
             const profileURL = 'http://127.0.0.1:8000/api/v1/auth/users/me/';
+            const chatDelUrl = 'http://127.0.0.1:8000/account/profile/';
+            const chatDelRedir = `<meta http-equiv='refresh' content='0; URL=${chatDelUrl}'>`;
             const options = {
                 method: 'GET',
                 headers: {
@@ -81,6 +83,234 @@
                     chatAdmin.innerHTML = 'Admin: ' + result.admin.username;
                     chatName.innerHTML = result.chat.name;
                     chatDesc.innerHTML = result.chat.description;
+                    if (result.admin.username === authUser.username) {
+                        let newElem = document.createElement('div');
+                        newElem.id = 'admin-panel';
+                        let elemChild = document.createElement('div');
+                        elemChild.id = 'inner-menu';
+                        let settings = '<button id="settings-btn">Chat settings</button>';
+                        let rename = '<button id="rename-btn">Rename chat</button>';
+                        let desc = '<button id="description-btn">Change description</button>';
+                        let del = '<button id="delete-btn">Delete chat</button>';
+                        elemChild.innerHTML = rename + desc + del;
+                        elemChild.style.display = 'none';
+                        newElem.insertAdjacentHTML('afterbegin', settings);
+                        newElem.insertAdjacentElement('beforeend', elemChild);
+                        chatInfo.insertAdjacentElement('beforeend', newElem);
+                        let setBtn = document.getElementById('settings-btn');
+                        let rnBtn = document.getElementById('rename-btn');
+                        let descBtn = document.getElementById('description-btn');
+                        let delBtn = document.getElementById('delete-btn');
+                        setBtn.addEventListener('click', () => {
+                            setBtn.style.display = 'none';
+                            elemChild.style.display = 'initial';
+                        });
+
+
+                        rnBtn.addEventListener('click', () => {
+                            elemChild.style.display = 'none';
+                            let input = document.createElement('input');
+                            input.type = 'text';
+                            input.id = 'rename-input';
+                            input.value = chatName.textContent;
+                            let inputBlock = `<div id="rename-block"><p>${input}</p>
+                                <p><button id="rename-submit">Submit</button></p></div>`;
+                            newElem.insertAdjacentHTML('afterbegin', inputBlock);
+                            document.getElementById('rename-submit').addEventListener('click', () => {
+                                if (input.value.length < 4) {
+                                    let error = document.getElementById('settings-error-str');
+                                        if (error) {
+                                            error.innerHTML = 'Name should consist of at least 4 symbols';
+                                        } else {
+                                            error = document.createElement('h4');
+                                            error.id = 'settings-error-str';
+                                            error.innerHTML = 'Name should consist of at least 4 symbols';
+                                            newElem.insertAdjacentElement('afterbegin', error);
+                                        };
+                                } else if (input.value === chatName.textContent || input.value === '') {
+                                    document.getElementById('settings-error-str').textContent = '';
+                                    document.getElementById('rename-block').remove();
+                                    setBtn.style.display = 'initial';
+                                } else {
+                                    let params = {name: input.value}
+                                    let url = `http://127.0.0.1:8000/api/v1/chat/${index}/`;
+                                    let options = {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Authorization': `Token ${token}`,
+                                            'Content-Type': 'application/json;charset=utf-8',
+                                        },
+                                        body: JSON.stringify(params),
+                                    };
+                                    fetch(url, options).then(res => {
+                                        if (res.status === 200) {
+                                            return res.json();
+                                        } else {
+                                            let error = document.getElementById('settings-error-str');
+                                            if (error) {
+                                                error.innerHTML = 'Internal server error, please try again later';
+                                            } else {
+                                                error = document.createElement('h4');
+                                                error.id = 'settings-error-str';
+                                                error.innerHTML = 'Internal server error, please try again later';
+                                                newElem.insertAdjacentElement('afterbegin', error);
+                                            };
+                                        };
+                                    }).then(result => {
+                                        chatName.textContent = result.name;
+                                        document.getElementById('settings-error-str').textContent = '';
+                                        document.getElementById('rename-block').remove();
+                                        setBtn.style.display = 'initial';
+                                    }).catch(error => console.log(error.message));
+                                };
+                            });
+                        });
+
+
+                        descBtn.addEventListener('click', () => {
+                            elemChild.style.display = 'none';
+                            let input = document.createElement('input');
+                            input.type = 'text';
+                            input.id = 'rename-input';
+                            input.value = chatDesc.textContent;
+                            let inputBlock = `<div id="desc-block"><p>${input}</p>
+                                <p><button id="desc-submit">Submit</button></p></div>`;
+                            newElem.insertAdjacentHTML('afterbegin', inputBlock);
+                            document.getElementById('desc-submit').addEventListener('click', () => {
+                                if (input.value.length < 4) {
+                                    let error = document.getElementById('settings-error-str');
+                                        if (error) {
+                                            error.innerHTML = 'Description should consist of at least 4 symbols';
+                                        } else {
+                                            error = document.createElement('h4');
+                                            error.id = 'settings-error-str';
+                                            error.innerHTML = 'Description should consist of at least 4 symbols';
+                                            newElem.insertAdjacentElement('afterbegin', error);
+                                        };
+                                } else if (input.value === chatName.textContent || input.value === '') {
+                                    document.getElementById('settings-error-str').textContent = '';
+                                    document.getElementById('desc-block').remove();
+                                    setBtn.style.display = 'initial';
+                                } else {
+                                    let params = {description: input.value}
+                                    let url = `http://127.0.0.1:8000/api/v1/chat/${index}/`;
+                                    let options = {
+                                        method: 'PATCH',
+                                        headers: {
+                                            'Authorization': `Token ${token}`,
+                                            'Content-Type': 'application/json;charset=utf-8',
+                                        },
+                                        body: JSON.stringify(params),
+                                    };
+                                    fetch(url, options).then(res => {
+                                        if (res.status === 200) {
+                                            return res.json();
+                                        } else {
+                                            let error = document.getElementById('settings-error-str');
+                                            if (error) {
+                                                error.innerHTML = 'Internal server error, please try again later';
+                                            } else {
+                                                error = document.createElement('h4');
+                                                error.id = 'settings-error-str';
+                                                error.innerHTML = 'Internal server error, please try again later';
+                                                newElem.insertAdjacentElement('afterbegin', error);
+                                            };
+                                        };
+                                    }).then(result => {
+                                        chatDesc.textContent = result.description;
+                                        document.getElementById('settings-error-str').textContent = '';
+                                        document.getElementById('rename-block').remove();
+                                        setBtn.style.display = 'initial';
+                                    }).catch(error => console.log(error.message));
+                                };
+                            });
+                        });
+
+                        delBtn.addEventListener('click', () => {
+                            elemChild.style.display = 'none';
+                            let delBlock = `<div id="del-block"><p>You sure you want to delete this chat?</p>
+                                <p><button id="del-confirm">Delete</button></p>
+                                <p><button id="del-return">Return</button></p>`;
+                            newElem.insertAdjacentHTML('afterbegin', delBlock);
+                            document.getElementById('del-confirm').addEventListener('click', () => {
+                                let url = `http://127.0.0.1:8000/api/v1/chat/${index}/`;
+                                let options = {
+                                    method: 'DELETE',
+                                    headers: {
+                                        'Authorization': `Token ${token}`,
+                                    },
+                                };
+                                fetch(url, options).then(res => {
+                                    if (res.status === 204) {
+                                        document.querySelector('head').insertAdjacentHTML('beforeend', chatDelRedir);
+                                    } else {
+                                        let error = document.getElementById('settings-error-str');
+                                        if (error) {
+                                            error.innerHTML = 'Internal server error, please try again later';
+                                        } else {
+                                            error = document.createElement('h4');
+                                            error.id = 'settings-error-str';
+                                            error.innerHTML = 'Internal server error, please try again later';
+                                            newElem.insertAdjacentElement('afterbegin', error);
+                                        };
+                                    };
+                                }).catch(error => console.log(error.message));
+                            });
+                            document.getElementById('del-return').addEventListener('click', () => {
+                                document.getElementById('settings-error-str').textContent = '';
+                                document.getElementById('del-block').remove();
+                                setBtn.style.display = 'initial';
+                            });
+                        });
+                    } else {
+                        let newElem = document.createElement('div');
+                        newElem.id = 'chat-leave';
+                        newElem.innerHTML = '<button id="leave-menu">Leave chat</button>';
+                        chatInfo.insertAdjacentElement('beforeend', newElem);
+                        document.getElementById('leave-menu').addEventListener('click', () => {
+                            newElem.style.display = 'none';
+                            let choice = document.createElement('div');
+                            choice.innerHTML = `<p>You sure you want to leave this chat?</p>
+                            <p><button id="leave-confirm">Leave</button></p>
+                            <p><button id="leave-return">Return</button></p>`;
+                            chatInfo.insertAdjacentElement('beforeend', choice);
+                            document.getElementById('leave-confirm').addEventListener('click', () => {
+                                let url = `http://127.0.0.1:8000/api/v1/leave_chat/${index}`;
+                                let params = {user: authUser.username};
+                                let options = {
+                                    method: 'PATCH',
+                                    headers: {
+                                        'Authorization': `Token ${token}`,
+                                        'Content-Type': 'application/json;charset=utf-8',
+                                    },
+                                    body: JSON.stringify(params),
+                                };
+                                fetch(url, options).then(res => {
+                                    if (res.status === 204) {
+                                        document.querySelector('head').insertAdjacentHTML('beforeend', chatDelRedir);
+                                    } else {
+                                        let error = document.getElementById('settings-error-str');
+                                        if (error) {
+                                            error.innerHTML = 'Internal server error, please try again later';
+                                        } else {
+                                            error = document.createElement('h4');
+                                            error.id = 'settings-error-str';
+                                            error.innerHTML = 'Internal server error, please try again later';
+                                            newElem.insertAdjacentElement('afterbegin', error);
+                                        };
+                                    };
+                                }).catch(error => console.log(error.message));
+                            });
+
+                            document.getElementById('leave-return').addEventListener('click', () => {
+                                if (document.getElementById('settings-error-str')) {
+                                    document.getElementById('settings-error-str').textContent = '';
+                                };
+                                choice.remove();
+                                newElem.style.display = 'initial';
+                            });
+                        });
+                    };
                 };
 
 
