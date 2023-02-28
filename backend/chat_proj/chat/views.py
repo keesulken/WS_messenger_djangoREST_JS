@@ -114,8 +114,8 @@ class NewChatAPIView(APIView):
 class NewPrivateChatAPIView(APIView):
     def post(self, request, **kwargs):
         chat = ChatRoom()
-        companion1 = User.objects.get(username=request.data['init'])
-        companion2 = User.objects.get(username=request.data['companion'])
+        companion1 = User.objects.get(pk=request.data['init'])
+        companion2 = User.objects.get(pk=request.data['companion'])
         chat.name = f'{companion1.pk}to{companion2.pk}'
         chat.admin_id = 0
         chat.private = True

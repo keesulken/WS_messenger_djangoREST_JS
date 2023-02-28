@@ -18,6 +18,7 @@
             background-color: #A60400;
             margin: 0;
             height: 20vh;
+            display: flex;
         }
 
         .footer {
@@ -72,11 +73,17 @@
             height: 60px;
             width: 60px;
         }
+
+        .header div {
+            align-self: center;
+            margin-right: 5vw;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <img src="https://i.ibb.co/KKbb1GP/OWLANCHE-free-file.png" alt="logo" id="logo">
+        <div><a href="http://127.0.0.1:8000/logout/">quit</a></div>
     </div>
     <div class="root">
         <div class="users">
@@ -320,7 +327,6 @@
             };
             newElem.innerHTML = picture + username + button + adder;
             personalBlock.insertAdjacentElement('beforeend', newElem);
-            let actualName = document.getElementById('prof-name').textContent;
             let userNoteToHide = document.querySelector(`#user${result.id}`);
             if (userNoteToHide){
                 userNoteToHide.style.display = 'none';
@@ -331,9 +337,9 @@
             picBtn.addEventListener('click', () => {
                 picBtn.style.display = 'none';
                 adderBlock.style.display = 'initial';
-                document.getElementById('change-name-field').value = actualName;
             });
             document.getElementById('name-changer').addEventListener('click', () => {
+                let actualName = document.getElementById('prof-name').textContent;
                 let name = document.getElementById('change-name-field').value;
                 let template = /^\D[a-zA-z\d]+$/g;
                 if ((name === '') || (name === actualName)) {
@@ -401,7 +407,7 @@
                         };
                     }).then(result => {
                         document.getElementById('prof-name').textContent = result.username;
-                        document.getElementById('change-name-field').value = '';
+                        document.getElementById('change-name-field').value = result.username;
                         if (document.getElementById('pic-upload-error')) {
                             document.getElementById('pic-upload-error').textContent = '';
                         };
