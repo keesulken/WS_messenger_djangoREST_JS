@@ -34,9 +34,8 @@ msg_router.register(r'msg', MessageViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/profile/', ProfileAPIView.as_view()),
-    path('account/profile/', TemplateView.as_view(template_name='prof.html')),
+    path('account/profile/', TemplateView.as_view(template_name='profile.html')),
     path('account/chat/<int:pk>', TemplateView.as_view(template_name='chat.html')),
-    path('account/ws/1', TemplateView.as_view(template_name='ws.html')),
 
     path('api/v1/chatroom/<int:pk>', ChatDetailAPIView.as_view()),
     path('api/v1/user_chats/<int:user_id>', UserChatAPIView.as_view()),
