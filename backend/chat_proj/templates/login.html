@@ -99,6 +99,7 @@
                     if (res.status === 200) {
                         return res.json()
                     } else if (res.status === 400) {
+                        // catch error
                         errorStr.innerHTML = 'Incorrect username or password';
                     } else {
                         errorStr.innerHTML = 'Unknown error, please try again later';
